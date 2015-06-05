@@ -16,6 +16,7 @@ public class CallStateHandler extends BroadcastReceiver {
     private static boolean bDisplayed = false;
     private int LAST_N_NUMS = 7;
     private String serverUrl = "https://apprtc.appspot.com/r/";
+    //private String serverUrl = "http://178.62.249.122/room/";
 
     private static boolean alreadyLaunched = false;
     private  static boolean mCall = false;
@@ -39,7 +40,7 @@ public class CallStateHandler extends BroadcastReceiver {
             Log.d("URL : ", "Computed last 6 OutgoingNumber number - " + last6Nums);
 
             setResultData(outgoingNumber);
-            launchVideo(context, last6Nums);
+            launchVideo(context, last6Nums, false);
             bOutgoing = true;
             mCall = true;
             return;
@@ -54,7 +55,7 @@ public class CallStateHandler extends BroadcastReceiver {
             last6Nums = (incomingNumber == null || incomingNumber.length() < LAST_N_NUMS) ?
                     incomingNumber : incomingNumber.substring(incomingNumber.length() - LAST_N_NUMS);
             Log.d("URL : ", "COMPUTED last 6 Incoming number - " + last6Nums);
-            launchVideo(context, last6Nums);
+            launchVideo(context, last6Nums, true);
             bIncoming = true;
 
         }
@@ -73,7 +74,7 @@ public class CallStateHandler extends BroadcastReceiver {
 
     }
 
-    private void launchVideo(Context context, String IncomingOrOutgoingNum) {
+    private void launchVideo(Context context, String IncomingOrOutgoingNum, boolean isIncoming) {
 
         if (alreadyLaunched) return;
 
@@ -85,8 +86,9 @@ public class CallStateHandler extends BroadcastReceiver {
         String myPhoneNumber = (persistedNum == null || persistedNum.length() < LAST_N_NUMS) ?
                 persistedNum : persistedNum.substring(persistedNum.length() - LAST_N_NUMS);
 
-        final String url = serverUrl + IncomingOrOutgoingNum + myPhoneNumber;
-        Log.d("URL :", url + ": Incoming / Outgoing Number : " + IncomingOrOutgoingNum + " MY NUMBER " + myPhoneNumber);
+        String roomNumber = isIncoming ?  (IncomingOrOutgoingNum + myPhoneNumber) : (myPhoneNumber + IncomingOrOutgoingNum) ;
+        final String url = serverUrl + roomNumber;
+        Log.d("URL : xxxxxxxxxxxxx ", url);
         Intent i = new Intent(context, VideoView.class);
         i.putExtra("URL", url);
         context.startService(i);

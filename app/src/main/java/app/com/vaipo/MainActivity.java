@@ -66,7 +66,7 @@ public class MainActivity extends Activity {
                 String intlCode = text3.getText().toString();
 
                 text1.setVisibility(View.GONE);
-                text2.setText("Thank You. You can now use Vaipo using the number " + FormatStringAsPhoneNumber(text1.getText().toString()));
+                text2.setText("Thank You. You can now use Vaipo using the number " + intlCode + " " + FormatStringAsPhoneNumber(number));
                 text3.setVisibility(View.GONE);
                 imgButton.setVisibility(View.GONE);
 
@@ -107,6 +107,9 @@ public class MainActivity extends Activity {
         switch (input.length()) {
             case 7:
                 output = String.format("%s-%s", input.substring(0,3), input.substring(3,7));
+                break;
+            case 9:
+                output = String.format("(%s) %s-%s", input.substring(0,3), input.substring(3,6), input.substring(6,9));
                 break;
             case 10:
                 output = String.format("(%s) %s-%s", input.substring(0,3), input.substring(3,6), input.substring(6,10));
