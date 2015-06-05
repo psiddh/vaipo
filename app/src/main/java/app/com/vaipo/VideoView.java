@@ -75,8 +75,8 @@ public class VideoView extends Service {
         params.gravity = Gravity.TOP | Gravity.LEFT;
         params.x = 0;
         params.y = 100;
-        params.height = 300;
-        params.width = 300;
+        params.height = 600;
+        params.width = 600;
 
         LinearLayout view1 = new LinearLayout(this);
         view1.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
