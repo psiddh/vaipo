@@ -1,6 +1,7 @@
 package app.com.vaipo;
 
 import android.annotation.TargetApi;
+import android.app.KeyguardManager;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -63,20 +64,24 @@ public class VideoView extends Service {
         }
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        KeyguardManager myKM = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
 
         videoView = new WebView(this);
         final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.TYPE_PHONE,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE,
+                myKM.inKeyguardRestrictedInputMode() ? WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY : WindowManager.LayoutParams.TYPE_PHONE,
+                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+                        | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
+                        | WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
+                        | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD ,
                 PixelFormat.TRANSLUCENT);
 
         params.gravity = Gravity.TOP | Gravity.LEFT;
         params.x = 0;
-        params.y = 100;
-        params.height = 600;
-        params.width = 600;
+        params.y = 300;
+        params.height = 400;
+        params.width = 400;
 
         LinearLayout view1 = new LinearLayout(this);
         view1.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
