@@ -80,8 +80,8 @@ public class VideoView extends Service {
         params.gravity = Gravity.TOP | Gravity.LEFT;
         params.x = 0;
         params.y = 300;
-        params.height = 400;
-        params.width = 400;
+        params.height = 500;
+        params.width = 500;
 
         LinearLayout view1 = new LinearLayout(this);
         view1.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
@@ -94,8 +94,7 @@ public class VideoView extends Service {
             @Override
             @TargetApi(Build.VERSION_CODES.LOLLIPOP)
             public void onPermissionRequest(final PermissionRequest request) {
-                Log.d("test", "test");
-                request.grant(request.getResources());
+            request.grant(request.getResources());
 
             }
 
@@ -202,7 +201,13 @@ public class VideoView extends Service {
     public void onDestroy() {
             Log.d("URL : ", "Service Destroyed");
         super.onDestroy();
-        if (videoView != null) windowManager.removeView(videoView);
+        if (videoView != null) {
+                       windowManager.removeView(videoView);
+                       videoView.clearHistory();
+                       videoView.clearCache(true);
+                       videoView.destroy();
+                       videoView = null;
+        }
     }
 
 }
