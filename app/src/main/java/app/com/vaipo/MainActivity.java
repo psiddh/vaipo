@@ -6,17 +6,27 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.telephony.PhoneNumberFormattingTextWatcher;
 import android.telephony.TelephonyManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
+import com.firebase.client.Firebase;
+
 import java.text.DecimalFormat;
 import java.util.Locale;
 
+import app.com.vaipo.appState.AppState;
+import app.com.vaipo.format.JsonFormatter;
+import app.com.vaipo.messages.RegistrationMsg;
+import app.com.vaipo.rest.RestAPI;
+
 
 public class MainActivity extends Activity {
+
+    private static String TAG = "MainActivity";
 
     private PhoneNumberFormattingTextWatcher mWatcher  ;
     private ImageButton imgButton;
@@ -24,13 +34,21 @@ public class MainActivity extends Activity {
     private EditText text2;
     private EditText text3;
 
-    SharedPreferences sharedPreferences;
+    private SharedPreferences sharedPreferences;
+    private AppState appState;
+    private RestAPI rest = new RestAPI();
+    private JsonFormatter formatter = new JsonFormatter();
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Firebase.setAndroidContext(this);
         setContentView(R.layout.activity_main);
+
+        appState = (AppState)getApplication();
+        formatter.initialize();
 
         Locale locale = this.getResources().getConfiguration().locale;
         //String code = locale.getCountry();
@@ -62,7 +80,7 @@ public class MainActivity extends Activity {
         imgButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String number = text1.getText().toString();
+                final String number = text1.getText().toString();
                 String intlCode = text3.getText().toString();
 
                 text1.setVisibility(View.GONE);
@@ -72,9 +90,19 @@ public class MainActivity extends Activity {
 
                 if (number != null || number != "") {
                     SharedPreferences.Editor editor = sharedPreferences.edit();
-                    editor.putString("my_number", intlCode + number + "");
+                    editor.putString("intl_number", intlCode + number + "");
+                    editor.putString("number", number + "");
                     editor.commit();
                 }
+                RegistrationMsg msg = new RegistrationMsg(appState.getID(), number);
+                rest.call(RestAPI.REGISTER, formatter.get(msg), new RestAPI.onPostCallBackDone() {
+                    @Override
+                    public void onResult(Integer result) {
+                        Log.d(TAG, "Hurrah");
+                        appState.setNumber(number);
+                    }
+                });
+
             }
         });
     }
