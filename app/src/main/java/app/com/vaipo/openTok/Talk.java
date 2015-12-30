@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
 import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 
 import com.opentok.android.BaseVideoRenderer;
 import com.opentok.android.OpentokError;
@@ -99,6 +100,9 @@ public class Talk implements Session.SessionListener, PublisherKit.PublisherList
         if (mPublisher != null) {
             mSession.publish(mPublisher);
         }
+
+        if (mCallback != null)
+            mCallback.addPreview(mPublisher);
     }
 
     @Override

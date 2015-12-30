@@ -14,4 +14,6 @@ public interface ITalkUICallbacks {
     void addPublisherView(Publisher publisher);
     void removePublisherView(Publisher publisher);
     void removeAllPublisherView(Publisher publisher);
+
+    void addPreview(Publisher publisher);
 }

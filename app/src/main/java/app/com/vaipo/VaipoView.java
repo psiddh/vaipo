@@ -10,9 +10,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 import android.widget.FrameLayout;
+import android.widget.RelativeLayout;
 
 
-
+import com.opentok.android.BaseVideoRenderer;
 import com.opentok.android.Publisher;
 import com.opentok.android.Subscriber;
 
@@ -92,31 +93,47 @@ public class VaipoView extends Activity implements ITalkUICallbacks {
 
     @Override
     public void addSubscribeView(Subscriber subscriber) {
-        mSubscriberViewContainer.addView(subscriber.getView());
+        if (subscriber != null)
+            mSubscriberViewContainer.addView(subscriber.getView());
     }
 
     @Override
     public void removeSubscribeView(Subscriber subscriber) {
-        mSubscriberViewContainer.removeView(subscriber.getView());
+        if (subscriber != null)
+            mSubscriberViewContainer.removeView(subscriber.getView());
     }
 
     @Override
     public void removeAllSubscribeView(Subscriber subscriber) {
-        mSubscriberViewContainer.removeAllViews();
+        if (subscriber != null)
+            mSubscriberViewContainer.removeAllViews();
     }
 
     @Override
     public void addPublisherView(Publisher publisher) {
-        mPublisherViewContainer.addView(publisher.getView());
+        if (publisher != null)
+            mPublisherViewContainer.addView(publisher.getView());
     }
 
     @Override
     public void removePublisherView(Publisher publisher) {
-        mPublisherViewContainer.removeView(publisher.getRenderer().getView());
+        if (publisher != null)
+            mPublisherViewContainer.removeView(publisher.getRenderer().getView());
     }
 
     @Override
     public void removeAllPublisherView(Publisher publisher) {
-        mPublisherViewContainer.removeAllViews();
+        if (publisher != null)
+            mPublisherViewContainer.removeAllViews();
+    }
+
+    public void addPreview(Publisher publisher) {
+        if (publisher == null)
+            return;
+        // Add video preview
+        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(
+                RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
+        mPublisherViewContainer.addView(publisher.getView(), lp);
+        publisher.setStyle(BaseVideoRenderer.STYLE_VIDEO_SCALE, BaseVideoRenderer.STYLE_VIDEO_FILL);
     }
 }

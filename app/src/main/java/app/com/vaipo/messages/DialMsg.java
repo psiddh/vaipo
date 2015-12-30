@@ -9,6 +9,7 @@ public class DialMsg implements IMessage {
     private String caller;
     private int state;
     private String sessionId;
+    private String token;
 
 
     public static final int IDLE = 0;
@@ -24,6 +25,8 @@ public class DialMsg implements IMessage {
         caller = "";
         state = IDLE;
         sessionId = "-1";
+        token = "";
+
     }
 
     public void setId(String id) {
