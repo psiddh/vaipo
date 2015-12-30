@@ -110,8 +110,10 @@ public class CallStateHandler extends BroadcastReceiver {
             mCall = true;  //fire the flag that there is call ongoing
         } else if (state.equalsIgnoreCase(TelephonyManager.EXTRA_STATE_IDLE)) {
             if (mCall) {
-                if (message != null)
-                    message.setState(DialMsg.IDLE);
+                message = new DialMsg();
+                message.setId(appState.getID());
+                message.setState(DialMsg.END);
+                rest.call(RestAPI.CALL, formatter.get(message), null);
 
                 mCall = false; //Reverting the flag, indicating you are aware that there was call
                 // Here do the rest of your operation you want
@@ -139,10 +141,11 @@ public class CallStateHandler extends BroadcastReceiver {
         String url = serverUrl + roomNumber;
         if (!fixedServerUrl.equals(""))
             url = fixedServerUrl;
+        /*
         Log.d("URL : xxxxxxxxxxxxx ", url);
         Intent i = new Intent(context, VideoView.class);
         i.putExtra("URL", url);
-        context.startService(i);
+        context.startService(i);*/
 
         //endCallIfBlocked(context);
     }

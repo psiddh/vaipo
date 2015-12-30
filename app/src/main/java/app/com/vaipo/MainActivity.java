@@ -1,6 +1,7 @@
 package app.com.vaipo;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -11,9 +12,15 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageButton;
 
+import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
+import com.firebase.client.ValueEventListener;
+import com.opentok.android.Publisher;
+import com.opentok.android.Subscriber;
 
 import java.text.DecimalFormat;
 import java.util.Locale;
@@ -21,6 +28,7 @@ import java.util.Locale;
 import app.com.vaipo.appState.AppState;
 import app.com.vaipo.format.JsonFormatter;
 import app.com.vaipo.messages.RegistrationMsg;
+import app.com.vaipo.openTok.ITalkUICallbacks;
 import app.com.vaipo.rest.RestAPI;
 
 
@@ -39,6 +47,13 @@ public class MainActivity extends Activity {
     private RestAPI rest = new RestAPI();
     private JsonFormatter formatter = new JsonFormatter();
 
+    private final String LINK = "link";
+    private static final String STATE = "state";
+    private static final String SESSIONID = "sessionId";
+    private static final String TOKEN = "token";
+
+
+    private Firebase myFirebaseRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -100,6 +115,8 @@ public class MainActivity extends Activity {
                     public void onResult(Integer result) {
                         Log.d(TAG, "Hurrah");
                         appState.setNumber(number);
+
+                        setUpFirebaseListner();
                     }
                 });
 
@@ -152,5 +169,66 @@ public class MainActivity extends Activity {
                 return null;
         }
         return output;
+    }
+
+    private void setUpFirebaseListner() {
+        myFirebaseRef = new Firebase("https://vaipo.firebaseio.com/" + LINK + "/" + appState.getID());
+        myFirebaseRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.d(TAG, "There are " + dataSnapshot.getChildrenCount() + " values @ " + myFirebaseRef);
+                String newSessionId = "-1", newToken = "-1";
+
+                for (DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
+                    if (postSnapshot.getKey().equalsIgnoreCase(SESSIONID)) {
+                        newSessionId = (String) postSnapshot.getValue();
+                        if (newSessionId == null || newSessionId.equalsIgnoreCase("-1")) {
+                            //ignore
+                            newSessionId = "-1";
+                        }
+                        Log.d(TAG, "New SessionId Val " + newSessionId);
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putString("sessionId", newSessionId);
+                        editor.commit();
+                    } else if (postSnapshot.getKey().equalsIgnoreCase(TOKEN)) {
+                        newToken = (String) postSnapshot.getValue();
+                        if (newToken == null || newToken.equalsIgnoreCase("-1")) {
+                            //ignore
+                            newToken = "-1";
+                        }
+                        Log.d(TAG, "New Token Val " + newToken);
+                        SharedPreferences.Editor editor = sharedPreferences.edit();
+                        editor.putString("token", newToken);
+                        editor.commit();
+                    } else {
+                        continue;
+                    }
+
+                }
+
+                if (!newSessionId.equalsIgnoreCase("-1")) {
+                    /*MainActivity.this.runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            Intent i = new Intent(MainActivity.this, VaipoView.class);
+                            i.putExtra("sessionId", newSessionId);
+
+                            MainActivity.this.startActivity(i);
+                        }
+                    });*/
+
+                    Intent i = new Intent(MainActivity.this, VaipoView.class);
+                    i.putExtra("sessionId", newSessionId);
+                    i.putExtra("token", newToken);
+                    MainActivity.this.startActivity(i);
+                }
+            }
+
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+
+            }
+        });
+
     }
 }
