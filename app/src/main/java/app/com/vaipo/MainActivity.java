@@ -86,7 +86,15 @@ public class MainActivity extends Activity {
         prefix.setText(code);
 
         EditText number = (EditText) findViewById(R.id.editText);
-        number.setText(tm.getLine1Number());
+
+
+        StringBuffer simNumber = new StringBuffer(tm.getLine1Number());
+        if (simNumber != null && simNumber.length() > 0 && simNumber.charAt(0) == '+') {
+            if (code != null)
+                simNumber.replace(0,code.length(), "");
+        }
+        number.setText(simNumber);
+        number.setSelection(simNumber.length());
 
         text1 = (EditText) findViewById(R.id.editText);
         text2 = (EditText) findViewById(R.id.editText2);
@@ -125,6 +133,28 @@ public class MainActivity extends Activity {
         });
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        outState.putBoolean("text1Gone", (text1.getVisibility() == View.GONE));
+        outState.putBoolean("text2Gone", (text2.getVisibility() == View.GONE));
+        outState.putBoolean("text3Gone", (text3.getVisibility() == View.GONE));
+        outState.putBoolean("imgGone", (imgButton.getVisibility() == View.GONE));
+
+
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle inState) {
+        super.onRestoreInstanceState(inState);
+
+        text1.setVisibility((inState.getBoolean("text1Gone") == true) ? View.GONE : View.VISIBLE);
+        text2.setVisibility((inState.getBoolean("text2Gone") == true) ? View.GONE : View.VISIBLE);
+        text3.setVisibility((inState.getBoolean("text3Gone") == true) ? View.GONE : View.VISIBLE);
+        imgButton.setVisibility((inState.getBoolean("imgGone") == true) ? View.GONE : View.VISIBLE);
+
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
