@@ -26,6 +26,7 @@ import java.text.DecimalFormat;
 import java.util.Locale;
 
 import app.com.vaipo.appState.AppState;
+import app.com.vaipo.appState.Utils.Utils;
 import app.com.vaipo.format.JsonFormatter;
 import app.com.vaipo.messages.RegistrationMsg;
 import app.com.vaipo.openTok.ITalkUICallbacks;
@@ -180,7 +181,9 @@ public class MainActivity extends Activity {
                 String newSessionId = "-1", newToken = "-1";
 
                 for (DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
-                    if (postSnapshot.getKey().equalsIgnoreCase(SESSIONID)) {
+                    if (postSnapshot.getKey().equalsIgnoreCase(STATE)) {
+                        Utils.endVaipoCall(MainActivity.this);
+                    } else if (postSnapshot.getKey().equalsIgnoreCase(SESSIONID)) {
                         newSessionId = (String) postSnapshot.getValue();
                         if (newSessionId == null || newSessionId.equalsIgnoreCase("-1")) {
                             //ignore
@@ -220,7 +223,7 @@ public class MainActivity extends Activity {
                     Intent i = new Intent(MainActivity.this, VaipoView.class);
                     i.putExtra("sessionId", newSessionId);
                     i.putExtra("token", newToken);
-                    MainActivity.this.startActivity(i);
+                    MainActivity.this.startActivityForResult(i, 1001);
                 }
             }
 

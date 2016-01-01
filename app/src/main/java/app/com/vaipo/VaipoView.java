@@ -1,15 +1,21 @@
 package app.com.vaipo;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 
 
@@ -18,6 +24,7 @@ import com.opentok.android.Publisher;
 import com.opentok.android.Subscriber;
 
 
+import app.com.vaipo.appState.Utils.Utils;
 import app.com.vaipo.openTok.ITalkUICallbacks;
 import app.com.vaipo.openTok.Talk;
 
@@ -30,6 +37,20 @@ public class VaipoView extends Activity implements ITalkUICallbacks {
     private FrameLayout mPublisherViewContainer;
 
     private Talk mTalk;
+    // Spinning wheel for loading subscriber view
+    private ProgressBar mLoadingSub;
+
+    // Our handler for received Intents. This will be called whenever an Intent
+    // with an action named "end-vaipo-call" is broadcasted.
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // Get extra data included in the Intent
+            //String message = intent.getStringExtra("message");
+            //Log.d("receiver", "Got message: " + message);
+            finish();
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,6 +69,12 @@ public class VaipoView extends Activity implements ITalkUICallbacks {
 
         mTalk = new Talk(this, sessionId, token);
 
+        // Register to receive messages.
+        // We are registering an observer (mMessageReceiver) to receive Intents
+        // with actions named "custom-event-name".
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+                new IntentFilter(Utils.END_VAIPO_CALL));
+        mLoadingSub = (ProgressBar) findViewById(R.id.loadingSpinner);
 
     }
 
@@ -70,9 +97,16 @@ public class VaipoView extends Activity implements ITalkUICallbacks {
     }
 
     @Override
+    protected void onDestroy() {
+        // Unregister since the activity is about to be closed.
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+        super.onDestroy();
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+        getMenuInflater().inflate(R.menu.menu_vaipoview, menu);
         return true;
     }
 
@@ -84,8 +118,9 @@ public class VaipoView extends Activity implements ITalkUICallbacks {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
+        if (id == R.id.menu_swap) {
+            if (mTalk != null)
+                mTalk.swap();
         }
 
         return super.onOptionsItemSelected(item);
@@ -112,7 +147,7 @@ public class VaipoView extends Activity implements ITalkUICallbacks {
     @Override
     public void addPublisherView(Publisher publisher) {
         if (publisher != null)
-            mPublisherViewContainer.addView(publisher.getView());
+            attachPublisherView(publisher);
     }
 
     @Override
@@ -127,7 +162,10 @@ public class VaipoView extends Activity implements ITalkUICallbacks {
             mPublisherViewContainer.removeAllViews();
     }
 
+    @Override
     public void addPreview(Publisher publisher) {
+        mLoadingSub.setVisibility(View.GONE);
+
         if (publisher == null)
             return;
         // Add video preview
@@ -135,5 +173,57 @@ public class VaipoView extends Activity implements ITalkUICallbacks {
                 RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT);
         mPublisherViewContainer.addView(publisher.getView(), lp);
         publisher.setStyle(BaseVideoRenderer.STYLE_VIDEO_SCALE, BaseVideoRenderer.STYLE_VIDEO_FILL);
+    }
+
+    @Override
+    public void swapCamera(Publisher publisher) {
+        if (publisher != null) {
+            publisher.swapCamera();
+        }
+    }
+
+    @Override
+    public void end() {
+        finish();
+    }
+
+    @Override
+    public void attachSubscriberView(Subscriber subscriber) {
+
+        mLoadingSub.setVisibility(View.GONE);
+
+        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
+                getResources().getDisplayMetrics().widthPixels, getResources()
+                .getDisplayMetrics().heightPixels);
+        mSubscriberViewContainer.removeView(subscriber.getView());
+        mSubscriberViewContainer.addView(subscriber.getView(), layoutParams);
+        subscriber.setStyle(BaseVideoRenderer.STYLE_VIDEO_SCALE,
+                BaseVideoRenderer.STYLE_VIDEO_FILL);
+    }
+
+    @Override
+    public void attachPublisherView(Publisher publisher) {
+        publisher.setStyle(BaseVideoRenderer.STYLE_VIDEO_SCALE,
+                BaseVideoRenderer.STYLE_VIDEO_FILL);
+        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
+                320, 240);
+        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM,
+                RelativeLayout.TRUE);
+        layoutParams.addRule(RelativeLayout.ALIGN_PARENT_RIGHT,
+                RelativeLayout.TRUE);
+        layoutParams.bottomMargin = dpToPx(8);
+        layoutParams.rightMargin = dpToPx(8);
+        mPublisherViewContainer.addView(publisher.getView(), layoutParams);
+    }
+
+    /**
+     * Converts dp to real pixels, according to the screen density.
+     *
+     * @param dp A number of density-independent pixels.
+     * @return The equivalent number of real pixels.
+     */
+    private int dpToPx(int dp) {
+        double screenDensity = this.getResources().getDisplayMetrics().density;
+        return (int) (screenDensity * (double) dp);
     }
 }

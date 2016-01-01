@@ -16,4 +16,10 @@ public interface ITalkUICallbacks {
     void removeAllPublisherView(Publisher publisher);
 
     void addPreview(Publisher publisher);
+
+    void swapCamera(Publisher publisher);
+    void end();
+    void attachSubscriberView(Subscriber subscriber);
+    void attachPublisherView(Publisher publisher);
+
 }

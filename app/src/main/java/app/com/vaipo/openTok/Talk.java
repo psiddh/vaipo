@@ -4,6 +4,7 @@ package app.com.vaipo.openTok;
 import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
+import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
@@ -19,13 +20,13 @@ import com.opentok.android.SubscriberKit;
 import java.util.ArrayList;
 
 
-public class Talk implements Session.SessionListener, PublisherKit.PublisherListener, SubscriberKit.SubscriberListener {
+public class Talk implements Session.SessionListener, PublisherKit.PublisherListener, SubscriberKit.SubscriberListener, Subscriber.VideoListener {
+
     private static String TAG = "Talk";
     private String mSessionId;
     private String mApiKey = "45425702";
     private String mApiSecret = "77abf733ad26b255a85453922fea62ebc1fee654";
     private String mToken = "T1==cGFydG5lcl9pZD00NTQyNTcwMiZzaWc9ZWY5ZmY1MjFmNWM4YTdkMGIzNDQxMzg3ZTU5NTdmYTM4MzU5NGJlNzpyb2xlPXB1Ymxpc2hlciZzZXNzaW9uX2lkPTJfTVg0ME5UUXlOVGN3TW41LU1UUTFNRGN5TXpneE5UWTFNSDQ1VkU5dmEwdHlSREpKVUdSekwxTlpRMjV0ZGpCaFdWaC1mZyZjcmVhdGVfdGltZT0xNDUwNzIzOTA2Jm5vbmNlPTAuMDU0NTM1NjA2NTAwMDM3NzUmZXhwaXJlX3RpbWU9MTQ1MTMyODQ1NyZjb25uZWN0aW9uX2RhdGE9";
-
 
 
     private Session mSession;
@@ -49,6 +50,7 @@ public class Talk implements Session.SessionListener, PublisherKit.PublisherList
         initializePublisher(context);
 
         mCallback = (ITalkUICallbacks) context;
+        mStreams = new ArrayList<Stream>();
     }
 
 
@@ -91,6 +93,11 @@ public class Talk implements Session.SessionListener, PublisherKit.PublisherList
         }
     }
 
+    public void swap() {
+        if (mCallback != null && mSession != null)
+            mCallback.swapCamera(mPublisher);
+
+    }
     /* Session Listener methods */
 
     @Override
@@ -117,13 +124,20 @@ public class Talk implements Session.SessionListener, PublisherKit.PublisherList
         mStreams.clear();
         mSession = null;
 
+        if (mCallback != null)
+            mCallback.end();
+
     }
 
     @Override
     public void onStreamReceived(Session session, Stream stream) {
 
         Log.d(TAG, "Stream Received");
+        /*mStreams.add(stream);
 
+        if (mSubscriber == null) {
+            subscribeToStream(stream);
+        }*/
         if (mSubscriber == null) {
             mSubscriber = new Subscriber(mContext, stream);
             mSubscriber.setSubscriberListener(this);
@@ -138,6 +152,11 @@ public class Talk implements Session.SessionListener, PublisherKit.PublisherList
     public void onStreamDropped(Session session, Stream stream) {
         Log.d(TAG, "Stream Dropped");
 
+        /*mStreams.remove(stream);
+
+        if (mSubscriber != null) {
+            unsubscribeFromStream(stream);
+        }*/
         //if (mSubscriber != null) {
         if (mCallback != null)
             mCallback.removeAllSubscribeView(mSubscriber);
@@ -156,12 +175,15 @@ public class Talk implements Session.SessionListener, PublisherKit.PublisherList
     // PublisherKit.PublisherListener
     @Override
     public void onStreamCreated(PublisherKit publisherKit, Stream stream) {
-
+        /*mStreams.add(stream);
+        if (mSubscriber == null) {
+            subscribeToStream(stream);
+        }*/
     }
 
     @Override
     public void onStreamDestroyed(PublisherKit publisherKit, Stream stream) {
-
+        //unsubscribeFromStream(stream);
     }
 
     @Override
@@ -193,4 +215,57 @@ public class Talk implements Session.SessionListener, PublisherKit.PublisherList
         Log.e(TAG, "Error Domain: " + opentokError.getErrorDomain().name());
         Log.e(TAG, "Error Code: " + opentokError.getErrorCode().name());
     }
+
+    private void subscribeToStream(Stream stream) {
+        mSubscriber = new Subscriber(mContext, stream);
+        mSubscriber.setVideoListener(this);
+        mSession.subscribe(mSubscriber);
+
+        if (mSubscriber.getSubscribeToVideo()) {
+            // start loading spinning
+            // mLoadingSub.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void unsubscribeFromStream(Stream stream) {
+        mStreams.remove(stream);
+        if (mSubscriber.getStream().equals(stream)) {
+            if (mCallback != null)
+                mCallback.removeSubscribeView(mSubscriber);
+            mSubscriber = null;
+            if (!mStreams.isEmpty()) {
+                subscribeToStream(mStreams.get(0));
+            }
+        }
+
+    }
+
+    @Override
+    public void onVideoDataReceived(SubscriberKit subscriberKit) {
+        //if (mCallback != null)
+        //    mCallback.attachSubscriberView(mSubscriber);
+
+    }
+
+    @Override
+    public void onVideoDisabled(SubscriberKit subscriberKit, String s) {
+
+    }
+
+    @Override
+    public void onVideoEnabled(SubscriberKit subscriberKit, String s) {
+
+    }
+
+    @Override
+    public void onVideoDisableWarning(SubscriberKit subscriberKit) {
+
+    }
+
+    @Override
+    public void onVideoDisableWarningLifted(SubscriberKit subscriberKit) {
+
+    }
+
+
 }

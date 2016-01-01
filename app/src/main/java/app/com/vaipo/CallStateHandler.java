@@ -12,6 +12,7 @@ import android.util.Log;
 import java.lang.reflect.Method;
 
 import app.com.vaipo.appState.AppState;
+import app.com.vaipo.appState.Utils.Utils;
 import app.com.vaipo.format.JsonFormatter;
 import app.com.vaipo.messages.DialMsg;
 import app.com.vaipo.rest.RestAPI;
@@ -119,6 +120,8 @@ public class CallStateHandler extends BroadcastReceiver {
                 // Here do the rest of your operation you want
                 Intent i = new Intent(context, VideoView.class);
                 context.stopService(i);
+
+                Utils.endVaipoCall(context);
                 alreadyLaunched = false;
             }
         }

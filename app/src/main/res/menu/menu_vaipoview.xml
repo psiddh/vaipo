@@ -1,0 +1,12 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/menu_swap"
+        android:icon="@drawable/camera"
+        android:checkable="true"
+        android:enabled="true"
+
+        android:showAsAction="always"
+        android:title="swap"/>
+
+</menu>
