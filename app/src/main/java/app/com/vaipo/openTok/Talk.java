@@ -9,6 +9,7 @@ import android.widget.FrameLayout;
 import android.widget.RelativeLayout;
 
 import com.opentok.android.BaseVideoRenderer;
+import com.opentok.android.Connection;
 import com.opentok.android.OpentokError;
 import com.opentok.android.Publisher;
 import com.opentok.android.PublisherKit;
@@ -20,7 +21,7 @@ import com.opentok.android.SubscriberKit;
 import java.util.ArrayList;
 
 
-public class Talk implements Session.SessionListener, PublisherKit.PublisherListener, SubscriberKit.SubscriberListener, Subscriber.VideoListener {
+public class Talk implements Session.SessionListener, Session.ConnectionListener, PublisherKit.PublisherListener, SubscriberKit.SubscriberListener, Subscriber.VideoListener {
 
     private static String TAG = "Talk";
     private String mSessionId;
@@ -58,6 +59,7 @@ public class Talk implements Session.SessionListener, PublisherKit.PublisherList
         if (mSession == null) {
             mSession = new Session(context, mApiKey, mSessionId);
             mSession.setSessionListener(this);
+            mSession.setConnectionListener(this);
             mSession.connect(mToken);
         }
     }
@@ -114,6 +116,8 @@ public class Talk implements Session.SessionListener, PublisherKit.PublisherList
 
     @Override
     public void onDisconnected(Session session) {
+        Log.d(TAG, "Session DisConnected");
+
         if (mCallback != null) {
             mCallback.removePublisherView(mPublisher);
             mCallback.removeSubscribeView(mSubscriber);
@@ -203,7 +207,9 @@ public class Talk implements Session.SessionListener, PublisherKit.PublisherList
 
     @Override
     public void onDisconnected(SubscriberKit subscriberKit) {
-
+        if (mCallback != null) {
+            mCallback.end();
+        }
     }
 
     @Override
@@ -268,4 +274,18 @@ public class Talk implements Session.SessionListener, PublisherKit.PublisherList
     }
 
 
+    @Override
+    public void onConnectionCreated(Session session, Connection connection) {
+        Log.d(TAG, "Session Connection Created!");
+
+    }
+
+    @Override
+    public void onConnectionDestroyed(Session session, Connection connection) {
+
+        Log.d(TAG, "Session Connection Destroyed!");
+        if (mCallback != null)
+            mCallback.end();
+
+    }
 }

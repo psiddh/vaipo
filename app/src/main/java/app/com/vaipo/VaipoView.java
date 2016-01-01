@@ -48,7 +48,7 @@ public class VaipoView extends Activity implements ITalkUICallbacks {
             // Get extra data included in the Intent
             //String message = intent.getStringExtra("message");
             //Log.d("receiver", "Got message: " + message);
-            finish();
+            end();
         }
     };
 
@@ -81,26 +81,32 @@ public class VaipoView extends Activity implements ITalkUICallbacks {
     @Override
     public void onPause() {
         super.onPause();
-        mTalk.pause();
+        //mTalk.pause();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        mTalk.resume();
+        //mTalk.resume();
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        mTalk.stop();
+        //mTalk.stop();
     }
 
     @Override
     protected void onDestroy() {
         // Unregister since the activity is about to be closed.
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+        mTalk.stop();
         super.onDestroy();
+    }
+
+    @Override
+    public void onBackPressed() {
+        end();
     }
 
     @Override
@@ -184,6 +190,7 @@ public class VaipoView extends Activity implements ITalkUICallbacks {
 
     @Override
     public void end() {
+        mTalk.stop();
         finish();
     }
 

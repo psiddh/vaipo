@@ -31,6 +31,8 @@ public class CallStateHandler extends BroadcastReceiver {
 
     private static boolean alreadyLaunched = false;
     private  static boolean mCall = false;
+    private  static boolean mIncomingCallAnswered = false;
+
 
     private AppState appState  = new AppState();
 
@@ -49,6 +51,7 @@ public class CallStateHandler extends BroadcastReceiver {
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
             String number = prefs.getString("number", "");
         Log.d("URL : ",msg );
+        Log.d(TAG, "DBG: Vaipo State " + state);
         if (intent.getAction().equals(Intent.ACTION_NEW_OUTGOING_CALL)) {
 
             // get phone number from bundle
@@ -123,6 +126,13 @@ public class CallStateHandler extends BroadcastReceiver {
 
                 Utils.endVaipoCall(context);
                 alreadyLaunched = false;
+            }
+        } else if (state.equalsIgnoreCase(TelephonyManager.EXTRA_STATE_OFFHOOK)) {
+            if (mCall) {
+                if  (mIncomingCallAnswered) {
+
+                }
+                mIncomingCallAnswered = true;
             }
         }
 
