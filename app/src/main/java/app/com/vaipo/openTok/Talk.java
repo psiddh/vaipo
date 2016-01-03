@@ -4,9 +4,6 @@ package app.com.vaipo.openTok;
 import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
-import android.view.View;
-import android.widget.FrameLayout;
-import android.widget.RelativeLayout;
 
 import com.opentok.android.BaseVideoRenderer;
 import com.opentok.android.Connection;
@@ -25,8 +22,8 @@ public class Talk implements Session.SessionListener, Session.ConnectionListener
 
     private static String TAG = "Talk";
     private String mSessionId;
-    private String mApiKey = "45425702";
-    private String mApiSecret = "77abf733ad26b255a85453922fea62ebc1fee654";
+    private String mApiKey = "45454732";
+    private String mApiSecret = "3a9dab0dac2e8486b64057dbb92e1f9bf67dcca6";
     private String mToken = "T1==cGFydG5lcl9pZD00NTQyNTcwMiZzaWc9ZWY5ZmY1MjFmNWM4YTdkMGIzNDQxMzg3ZTU5NTdmYTM4MzU5NGJlNzpyb2xlPXB1Ymxpc2hlciZzZXNzaW9uX2lkPTJfTVg0ME5UUXlOVGN3TW41LU1UUTFNRGN5TXpneE5UWTFNSDQ1VkU5dmEwdHlSREpKVUdSekwxTlpRMjV0ZGpCaFdWaC1mZyZjcmVhdGVfdGltZT0xNDUwNzIzOTA2Jm5vbmNlPTAuMDU0NTM1NjA2NTAwMDM3NzUmZXhwaXJlX3RpbWU9MTQ1MTMyODQ1NyZjb25uZWN0aW9uX2RhdGE9";
 
 
