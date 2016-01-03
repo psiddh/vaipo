@@ -87,8 +87,7 @@ public class MainActivity extends Activity {
 
         EditText number = (EditText) findViewById(R.id.editText);
 
-
-        StringBuffer simNumber = new StringBuffer(tm.getLine1Number());
+        StringBuffer simNumber = (null == tm.getLine1Number()) ?  new StringBuffer(""): new StringBuffer(tm.getLine1Number());
         if (simNumber != null && simNumber.length() > 0 && simNumber.charAt(0) == '+') {
             if (code != null)
                 simNumber.replace(0,code.length(), "");
