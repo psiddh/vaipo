@@ -221,7 +221,7 @@ public class MainActivity extends Activity {
                         Log.d(TAG, "New SessionId Val " + newSessionId);
                         SharedPreferences.Editor editor = sharedPreferences.edit();
                         editor.putString("sessionId", newSessionId);
-                        editor.commit();
+                        //editor.commit();
                     } else if (postSnapshot.getKey().equalsIgnoreCase(TOKEN)) {
                         newToken = (String) postSnapshot.getValue();
                         if (newToken == null || newToken.equalsIgnoreCase("-1")) {
@@ -231,7 +231,7 @@ public class MainActivity extends Activity {
                         Log.d(TAG, "New Token Val " + newToken);
                         SharedPreferences.Editor editor = sharedPreferences.edit();
                         editor.putString("token", newToken);
-                        editor.commit();
+                        //editor.commit();
                     } else {
                         continue;
                     }
@@ -239,20 +239,12 @@ public class MainActivity extends Activity {
                 }
 
                 if (!newSessionId.equalsIgnoreCase("-1")) {
-                    /*MainActivity.this.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Intent i = new Intent(MainActivity.this, VaipoView.class);
-                            i.putExtra("sessionId", newSessionId);
 
-                            MainActivity.this.startActivity(i);
-                        }
-                    });*/
-
-                    Intent i = new Intent(MainActivity.this, VaipoView.class);
+                    Intent i = new Intent(MainActivity.this, BubbleVideoView.class);
                     i.putExtra("sessionId", newSessionId);
                     i.putExtra("token", newToken);
-                    MainActivity.this.startActivityForResult(i, 1001);
+                    MainActivity.this.startService(i);
+                    //MainActivity.this.startActivity(i);
                 }
             }
 

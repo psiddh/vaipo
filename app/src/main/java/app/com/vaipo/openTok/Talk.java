@@ -2,6 +2,7 @@ package app.com.vaipo.openTok;
 
 
 import android.app.Activity;
+import android.app.Service;
 import android.content.Context;
 import android.util.Log;
 
@@ -41,6 +42,17 @@ public class Talk implements Session.SessionListener, Session.ConnectionListener
 
 
     public Talk(Activity context, String sessionId, String token) {
+        mContext = context;
+        mSessionId = sessionId;
+        mToken = token;
+        initializeSession(context);
+        initializePublisher(context);
+
+        mCallback = (ITalkUICallbacks) context;
+        mStreams = new ArrayList<Stream>();
+    }
+
+    public Talk(Service context, String sessionId, String token) {
         mContext = context;
         mSessionId = sessionId;
         mToken = token;

@@ -64,6 +64,8 @@ public class VideoView extends Service {
             mUrl = intent.getStringExtra("URL");
         }
 
+
+
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         KeyguardManager myKM = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);

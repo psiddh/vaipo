@@ -121,7 +121,7 @@ public class CallStateHandler extends BroadcastReceiver {
 
                 mCall = false; //Reverting the flag, indicating you are aware that there was call
                 // Here do the rest of your operation you want
-                Intent i = new Intent(context, VideoView.class);
+                Intent i = new Intent(context, BubbleVideoView.class);
                 context.stopService(i);
 
                 Utils.endVaipoCall(context);

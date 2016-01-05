@@ -76,6 +76,8 @@ public class VaipoView extends Activity implements ITalkUICallbacks {
                 new IntentFilter(Utils.END_VAIPO_CALL));
         mLoadingSub = (ProgressBar) findViewById(R.id.loadingSpinner);
 
+
+
     }
 
     @Override
