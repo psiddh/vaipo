@@ -10,8 +10,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -51,12 +53,15 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
 
     private FrameLayout mSubscriberViewContainer;
     private FrameLayout mPublisherViewContainer;
+    private FrameLayout mParentcontainer;
 
     private Talk mTalk;
     // Spinning wheel for loading subscriber view
     private ProgressBar mLoadingSub;
 
     private View videoView;
+
+    private int mHeight, mWidth = 0;
 
     // Our handler for received Intents. This will be called whenever an Intent
     // with an action named "end-vaipo-call" is broadcasted.
@@ -99,6 +104,7 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
 
         mPublisherViewContainer = (FrameLayout) videoView.findViewById(R.id.publisher_container);
         mSubscriberViewContainer = (FrameLayout) videoView.findViewById(R.id.subscriber_container);
+        mParentcontainer = (FrameLayout) videoView.findViewById(R.id.parentcontainer);
 
         final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.WRAP_CONTENT,
@@ -110,20 +116,20 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
                         | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD ,
                 PixelFormat.TRANSLUCENT);
 
-        int width = getWidth(windowManager);
-        int height = getHeight(windowManager);
+        mWidth = getWidth(windowManager);
+        mHeight  = getHeight(windowManager);
 
 
         params.gravity = Gravity.TOP | Gravity.LEFT;
         params.x = 0;
-        params.y = height/2;
-        params.height = height/2;
-        params.width = height/2;
+        params.y = mHeight/2;
+        params.height = mHeight/2;
+        params.width = mHeight/2;
 
-        LinearLayout view1 = new LinearLayout(this);
-        view1.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
+        //LinearLayout view1 = new LinearLayout(this);
+        //view1.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
 
-
+        //videoView.setBackgroundResource(R.drawable.bubbleview_bg);
         windowManager.addView(videoView, params);
         try {
             videoView.setOnTouchListener(new View.OnTouchListener() {
@@ -175,7 +181,7 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
 
             @Override
             public void onClick(View arg0) {
-            initiatePopupWindow(videoView);
+            //initiatePopupWindow(videoView);
             _enable = false;
             }
         });
@@ -204,7 +210,7 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
             Display display = ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
             ListPopupWindow popup = new ListPopupWindow(this);
             popup.setAnchorView(anchor);
-            popup.setWidth((int) (display.getWidth()/(1.5)));
+            popup.setWidth((int) (getWidth(windowManager)/(1.5)));
             popup.show();
 
         } catch (Exception e) {
@@ -234,8 +240,11 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
 
     @Override
     public void addSubscribeView(Subscriber subscriber) {
-        if (subscriber != null)
+        if (subscriber != null) {
             mSubscriberViewContainer.addView(subscriber.getView());
+            //mSubscriberViewContainer.setPadding(3,3,3,3);
+        }
+        mParentcontainer.setBackgroundResource(R.drawable.bubbleview_bg);
     }
 
     @Override
@@ -275,14 +284,17 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
         if (publisher == null)
             return;
         // Add video preview
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+        /*LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
-        lp.gravity = Gravity.BOTTOM | Gravity.RIGHT;
+        lp.gravity = Gravity.BOTTOM | Gravity.RIGHT;*/
         /*lp.x = 0;
         lp.y = height/2;
         lp.height = height/2;
         lp.width = height/2;*/
+
+        RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(mHeight / 8, mHeight / 8);
         mPublisherViewContainer.addView(publisher.getView(), lp);
+        //mPublisherViewContainer.setBackgroundResource(R.color.publisher_border_color);
         publisher.setStyle(BaseVideoRenderer.STYLE_VIDEO_SCALE, BaseVideoRenderer.STYLE_VIDEO_FILL);
     }
 

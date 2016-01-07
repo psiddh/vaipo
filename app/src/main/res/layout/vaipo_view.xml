@@ -8,31 +8,26 @@
                 android:id ="@+id/rootView">
 
     <FrameLayout
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent">
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/parentcontainer"
+        android:padding="3dp">
 
         <FrameLayout
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:id="@+id/subscriber_container"></FrameLayout>
-
-        <ProgressBar
-            android:id="@+id/loadingSpinner"
-            style="?android:attr/progressBarStyleLarge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:indeterminate="false"
-            android:visibility="gone" />
+            android:id="@+id/subscriber_container"
+            >
+        </FrameLayout>
+
 
         <FrameLayout
-            android:layout_width="@dimen/publisher_width"
-            android:layout_height="@dimen/publisher_height"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:id="@+id/publisher_container"
             android:layout_gravity="bottom|end"
             android:layout_marginBottom="@dimen/publisher_bottom_margin"
             android:layout_marginEnd="@dimen/publisher_right_margin"
-            android:padding="@dimen/publisher_padding"
             android:background="@color/publisher_border_color" />
 
     </FrameLayout>

@@ -74,9 +74,7 @@ public class VaipoView extends Activity implements ITalkUICallbacks {
         // with actions named "custom-event-name".
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
                 new IntentFilter(Utils.END_VAIPO_CALL));
-        mLoadingSub = (ProgressBar) findViewById(R.id.loadingSpinner);
-
-
+        //mLoadingSub = (ProgressBar) findViewById(R.id.loadingSpinner);
 
     }
 
