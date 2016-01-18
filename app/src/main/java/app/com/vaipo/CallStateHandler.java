@@ -9,10 +9,13 @@ import android.preference.PreferenceManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import com.firebase.client.Firebase;
+
 import java.lang.reflect.Method;
 
 import app.com.vaipo.appState.AppState;
 import app.com.vaipo.appState.Utils.Utils;
+import app.com.vaipo.fire.FirebaseListener;
 import app.com.vaipo.format.JsonFormatter;
 import app.com.vaipo.messages.DialMsg;
 import app.com.vaipo.rest.RestAPI;
@@ -30,7 +33,7 @@ public class CallStateHandler extends BroadcastReceiver {
     private String fixedServerUrl = "http://10.0.0.14:4567/";
 
     private static boolean alreadyLaunched = false;
-    private  static boolean mCall = false;
+    public  static boolean mCall = false;
     private  static boolean mIncomingCallAnswered = false;
 
 
@@ -50,13 +53,14 @@ public class CallStateHandler extends BroadcastReceiver {
         formatter.initialize();
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
             String number = prefs.getString("number", "");
-        Log.d("URL : ",msg );
         Log.d(TAG, "DBG: Vaipo State " + state);
+        Firebase.setAndroidContext(context);
+
         if (intent.getAction().equals(Intent.ACTION_NEW_OUTGOING_CALL)) {
 
             // get phone number from bundle
             String outgoingNumber = intent.getStringExtra(Intent.EXTRA_PHONE_NUMBER);
-            Log.d("URL : ", "OutgoingNumber number - " + outgoingNumber);
+            Log.d(TAG, "OutgoingNumber number - " + outgoingNumber);
 
             message = new DialMsg();
             message.setId(appState.getID());
@@ -64,12 +68,16 @@ public class CallStateHandler extends BroadcastReceiver {
             message.setCallee(outgoingNumber);
             message.setState(DialMsg.DIALING);
 
-            rest.call(RestAPI.CALL, formatter.get(message), null);
-
+            rest.call(RestAPI.CALL, formatter.get(message), new RestAPI.onPostCallBackDone() {
+                @Override
+                public void onResult(Integer result) {
+                    FirebaseListener.setUp(context, appState.getID());
+                }
+            });
 
             last6Nums = (outgoingNumber == null || outgoingNumber.length() < LAST_N_NUMS) ?
-                    outgoingNumber : outgoingNumber.substring(outgoingNumber.length() - LAST_N_NUMS);
-            Log.d("URL : ", "Computed last 6 OutgoingNumber number - " + last6Nums);
+                            outgoingNumber : outgoingNumber.substring(outgoingNumber.length() - LAST_N_NUMS);
+            Log.d(TAG, "Computed last 6 OutgoingNumber number - " + last6Nums);
 
             setResultData(outgoingNumber);
             launchVideo(context, last6Nums, false);
@@ -80,12 +88,13 @@ public class CallStateHandler extends BroadcastReceiver {
             return;
         }
 
-            Log.d("CallStateHandler: ", "state - " + state);
+            Log.d(TAG, "state - " + state);
         if (TelephonyManager.EXTRA_STATE_RINGING.equals(state)) {
+
 
             String incomingNumber = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER);
             msg += ". Incoming number is " + incomingNumber;
-            Log.d("URL : ", "Incoming number - " + incomingNumber);
+            Log.d(TAG, "Incoming number - " + incomingNumber);
 
             if (!mCall) {
                 message = new DialMsg();
@@ -96,15 +105,14 @@ public class CallStateHandler extends BroadcastReceiver {
                 rest.call(RestAPI.CALL, formatter.get(message), new RestAPI.onPostCallBackDone() {
                     @Override
                     public void onResult(Integer result) {
-                        if (result == 200) {
-                        }
+                        FirebaseListener.setUp(context, appState.getID());
                     }
                 });
             }
 
             last6Nums = (incomingNumber == null || incomingNumber.length() < LAST_N_NUMS) ?
                     incomingNumber : incomingNumber.substring(incomingNumber.length() - LAST_N_NUMS);
-            Log.d("URL : ", "COMPUTED last 6 Incoming number - " + last6Nums);
+            Log.d(TAG, "COMPUTED last 6 Incoming number - " + last6Nums);
             launchVideo(context, last6Nums, true);
             bIncoming = true;
 
@@ -119,11 +127,12 @@ public class CallStateHandler extends BroadcastReceiver {
                 message.setState(DialMsg.END);
                 rest.call(RestAPI.CALL, formatter.get(message), null);
 
-                mCall = false; //Reverting the flag, indicating you are aware that there was call
+                        mCall = false; //Reverting the flag, indicating you are aware that there was call
                 // Here do the rest of your operation you want
                 Intent i = new Intent(context, BubbleVideoView.class);
                 context.stopService(i);
 
+                FirebaseListener.destroy();
                 Utils.endVaipoCall(context);
                 alreadyLaunched = false;
             }

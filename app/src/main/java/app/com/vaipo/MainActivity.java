@@ -28,6 +28,7 @@ import java.util.Locale;
 import app.com.vaipo.appState.AppState;
 import app.com.vaipo.appState.Utils.Utils;
 import app.com.vaipo.format.JsonFormatter;
+import app.com.vaipo.messages.DialMsg;
 import app.com.vaipo.messages.RegistrationMsg;
 import app.com.vaipo.openTok.ITalkUICallbacks;
 import app.com.vaipo.rest.RestAPI;
@@ -52,8 +53,10 @@ public class MainActivity extends Activity {
     private static final String STATE = "state";
     private static final String SESSIONID = "sessionId";
     private static final String TOKEN = "token";
+    private static final String USERACK = "userack";
+    private static final String RECEIVEACK = "receiveack";
 
-
+    public static String UUID = "";
     private Firebase myFirebaseRef;
 
     @Override
@@ -124,7 +127,8 @@ public class MainActivity extends Activity {
                         Log.d(TAG, "Hurrah");
                         appState.setNumber(number);
 
-                        setUpFirebaseListner();
+                        UUID = appState.getID();
+                        //setUpFirebaseListner();
                     }
                 });
 
@@ -211,7 +215,9 @@ public class MainActivity extends Activity {
 
                 for (DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
                     if (postSnapshot.getKey().equalsIgnoreCase(STATE)) {
-                        Utils.endVaipoCall(MainActivity.this);
+                       /* int state = (int) postSnapshot.getValue();
+                        if (state == DialMsg.END)
+                            Utils.endVaipoCall(MainActivity.this);*/
                     } else if (postSnapshot.getKey().equalsIgnoreCase(SESSIONID)) {
                         newSessionId = (String) postSnapshot.getValue();
                         if (newSessionId == null || newSessionId.equalsIgnoreCase("-1")) {
@@ -232,13 +238,17 @@ public class MainActivity extends Activity {
                         SharedPreferences.Editor editor = sharedPreferences.edit();
                         editor.putString("token", newToken);
                         //editor.commit();
-                    } else {
+                    } else if (postSnapshot.getKey().equalsIgnoreCase(RECEIVEACK)) {
+                        if ((boolean) postSnapshot.getValue())
+                            Utils.receiveUserAck(MainActivity.this);
+                    }
+                    else {
                         continue;
                     }
 
                 }
 
-                if (!newSessionId.equalsIgnoreCase("-1")) {
+                if (!newSessionId.equalsIgnoreCase("-1") && CallStateHandler.mCall) {
 
                     Intent i = new Intent(MainActivity.this, BubbleVideoView.class);
                     i.putExtra("sessionId", newSessionId);

@@ -206,11 +206,11 @@ public class VideoView extends Service {
             Log.d("URL : ", "Service Destroyed");
         super.onDestroy();
         if (videoView != null) {
-                       windowManager.removeView(videoView);
-                       videoView.clearHistory();
-                       videoView.clearCache(true);
-                       videoView.destroy();
-                       videoView = null;
+           windowManager.removeView(videoView);
+           videoView.clearHistory();
+           videoView.clearCache(true);
+           videoView.destroy();
+           videoView = null;
         }
     }
 

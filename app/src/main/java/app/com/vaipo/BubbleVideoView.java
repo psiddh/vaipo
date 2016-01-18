@@ -13,6 +13,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
+import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
 import android.os.Bundle;
@@ -28,20 +29,24 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ListPopupWindow;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 import com.opentok.android.BaseVideoRenderer;
 import com.opentok.android.Publisher;
 import com.opentok.android.Subscriber;
 
-import java.util.ArrayList;
-
+import app.com.vaipo.appState.AppState;
 import app.com.vaipo.appState.Utils.Utils;
+import app.com.vaipo.format.JsonFormatter;
+import app.com.vaipo.messages.UserMsg;
 import app.com.vaipo.openTok.ITalkUICallbacks;
 import app.com.vaipo.openTok.Talk;
+import app.com.vaipo.rest.RestAPI;
 
 
 public class BubbleVideoView extends Service implements ITalkUICallbacks {
@@ -63,6 +68,22 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
 
     private int mHeight, mWidth = 0;
 
+    private boolean mUserAck = false;
+    private boolean mReceiveAck = false;
+
+
+    private ImageButton  mButtonYes;
+    private ImageButton  mButtonNo;
+    private TextView mTextView;
+    private RelativeLayout mViewImgLayout;
+
+    private UserMsg mUsrAckMsg = new UserMsg();
+    private AppState mAppState = new AppState();
+    private RestAPI mRestAPI = new RestAPI();
+    private JsonFormatter mFormatter = new JsonFormatter();
+
+
+
     // Our handler for received Intents. This will be called whenever an Intent
     // with an action named "end-vaipo-call" is broadcasted.
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
@@ -71,16 +92,33 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
             // Get extra data included in the Intent
             //String message = intent.getStringExtra("message");
             //Log.d("receiver", "Got message: " + message);
-            end();
+
+            String action = intent.getAction();
+            if (action.equals(Utils.END_VAIPO_CALL)) {
+                end();
+            } else if (action.equals(Utils.RECEIVE_USER_ACK)) {
+                if (mUserAck == false) {
+                    mTextView.setText("Incoming Video Request!");
+
+                    //mButtonYes.setVisibility(View.GONE);
+                    //mButtonNo.setVisibility(View.GONE);
+
+
+                } else {
+                    mViewImgLayout.setVisibility(View.GONE);
+
+                    mTalk.notifyPublisher();
+                    mTalk.notifySubscriber();
+                }
+                mReceiveAck = true;
+
+            }
         }
     };
 
 
     boolean mHasDoubleClicked = false;
     long lastPressTime;
-    private Boolean _enable = true;
-
-    ArrayList<String> myArray;
 
     @Override
     public IBinder onBind(Intent intent) {
@@ -105,6 +143,46 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
         mPublisherViewContainer = (FrameLayout) videoView.findViewById(R.id.publisher_container);
         mSubscriberViewContainer = (FrameLayout) videoView.findViewById(R.id.subscriber_container);
         mParentcontainer = (FrameLayout) videoView.findViewById(R.id.parentcontainer);
+        mButtonYes = (ImageButton) videoView.findViewById(R.id.imgYes);
+        mButtonNo = (ImageButton) videoView.findViewById(R.id.imgNo);
+        mViewImgLayout = (RelativeLayout) videoView.findViewById(R.id.viewImg);
+        mTextView = (TextView) videoView.findViewById(R.id.textView);
+        mFormatter.initialize();
+
+
+        mButtonYes.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mUserAck = true;
+                mUsrAckMsg.setId(mAppState.getID());
+                mUsrAckMsg.setAck(mUserAck);
+                mRestAPI.call(RestAPI.USERACK, mFormatter.get(mUsrAckMsg), null);
+                mButtonYes.setVisibility(View.GONE);
+                mButtonNo.setVisibility(View.GONE);
+
+                if (mReceiveAck) {
+                    mViewImgLayout.setVisibility(View.GONE);
+                    mParentcontainer.setVisibility(View.VISIBLE);
+
+                    mTalk.notifyPublisher();
+                    mTalk.notifySubscriber();
+                }
+                else
+                    mTextView.setText("Waiting for other party to accept! Pls Wait");
+
+            }
+        });
+
+        mButtonNo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mUserAck = false;
+                mUsrAckMsg.setId(mAppState.getID());
+                mUsrAckMsg.setAck(mUserAck);
+                mRestAPI.call(RestAPI.USERACK, mFormatter.get(mUsrAckMsg), null);
+                mViewImgLayout.setVisibility(View.GONE);
+            }
+        });
 
         final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
                 WindowManager.LayoutParams.WRAP_CONTENT,
@@ -167,7 +245,8 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
                         case MotionEvent.ACTION_MOVE:
                             paramsF.x = initialX + (int) (event.getRawX() - initialTouchX);
                             paramsF.y = initialY + (int) (event.getRawY() - initialTouchY);
-                            windowManager.updateViewLayout(videoView, paramsF);
+                            if (videoView != null)
+                                windowManager.updateViewLayout(videoView, paramsF);
                             break;
                     }
                     return false;
@@ -182,7 +261,6 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
             @Override
             public void onClick(View arg0) {
             //initiatePopupWindow(videoView);
-            _enable = false;
             }
         });
 
@@ -201,6 +279,8 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
         // with actions named "custom-event-name".
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
                 new IntentFilter(Utils.END_VAIPO_CALL));
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+                new IntentFilter(Utils.RECEIVE_USER_ACK));
         //mLoadingSub = (ProgressBar) findViewById(R.id.loadingSpinner);
     }
 
@@ -234,17 +314,23 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
     @Override
     public void onDestroy() {
        Log.d("URL : ", "Service Destroyed");
+        mUserAck = false;
+        mFormatter.destroy();;
         internalEnd();
         super.onDestroy();
     }
 
     @Override
     public void addSubscribeView(Subscriber subscriber) {
+        if (!mUserAck)
+            return;
+
         if (subscriber != null) {
+            mSubscriberViewContainer.removeView(subscriber.getView());
             mSubscriberViewContainer.addView(subscriber.getView());
             //mSubscriberViewContainer.setPadding(3,3,3,3);
         }
-        mParentcontainer.setBackgroundResource(R.drawable.bubbleview_bg);
+        //mParentcontainer.setBackgroundResource(R.drawable.bubbleview_bg);
     }
 
     @Override
@@ -281,6 +367,8 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
     public void addPreview(Publisher publisher) {
         //mLoadingSub.setVisibility(View.GONE);
 
+        if (!mUserAck)
+            return;
         if (publisher == null)
             return;
         // Add video preview
@@ -388,6 +476,14 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
             height = display.getHeight();  // Deprecated
         }
         return height;
+    }
+
+    private Drawable getBGDrawable(int id) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            return getResources().getDrawable(id, this.getTheme());
+        } else {
+            return getResources().getDrawable(id);
+        }
     }
 
 }

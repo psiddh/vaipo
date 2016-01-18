@@ -10,7 +10,8 @@ public class DialMsg implements IMessage {
     private int state;
     private String sessionId;
     private String token;
-
+    private boolean userAck;
+    private boolean receiveAck;
 
     public static final int IDLE = 0;
     public static final int DIALING = 1;
@@ -26,6 +27,7 @@ public class DialMsg implements IMessage {
         state = IDLE;
         sessionId = "-1";
         token = "";
+        userAck = receiveAck = false;
 
     }
 

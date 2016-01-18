@@ -109,6 +109,20 @@ public class Talk implements Session.SessionListener, Session.ConnectionListener
             mCallback.swapCamera(mPublisher);
 
     }
+
+    public void notifyPublisher() {
+        if (mPublisher != null) {
+            mSession.publish(mPublisher);
+        }
+
+        if (mCallback != null)
+            mCallback.addPreview(mPublisher);
+    }
+
+    public void notifySubscriber() {
+        if (mCallback != null)
+            mCallback.addSubscribeView(mSubscriber);
+    }
     /* Session Listener methods */
 
     @Override

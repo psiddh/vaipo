@@ -25,6 +25,8 @@ public class RestAPI {
 
     public static String REGISTER = "register";
     public static String CALL = "call";
+    public static String USERACK = "userack";
+
 
     private AsyncTask<Void, Void, Integer> postRestCallAsync(final String baseUrl, final String message, final String msg, final onPostCallBackDone callback) {
         AsyncTask<Void, Void, Integer> task = new AsyncTask<Void, Void, Integer>() {
@@ -104,7 +106,7 @@ public class RestAPI {
                 return status;
             }
 
-            if (status != 200) {
+            if (status != 200 && conn.getContentLength() > 0) {
                 byte[] buffer = new byte[conn.getContentLength()];
                 int is = conn.getInputStream().read(buffer);
                 throw new IOException("Post failed with error code " + status);

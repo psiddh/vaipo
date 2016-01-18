@@ -13,6 +13,7 @@ import java.io.StringWriter;
 import app.com.vaipo.messages.DialMsg;
 import app.com.vaipo.messages.IMessage;
 import app.com.vaipo.messages.RegistrationMsg;
+import app.com.vaipo.messages.UserMsg;
 
 
 public class JsonFormatter {
@@ -54,6 +55,8 @@ public class JsonFormatter {
                 formatRegistrationMsg(msg);
             } else if (msg instanceof DialMsg) {
                 formatDialMsg(msg);
+            } else if (msg instanceof UserMsg) {
+                formatUserMsg(msg);
             } else {
                 throw new InstantiationError(" Unknown Class " + msg.getClass() + ", Unable to format!") ;
             }
@@ -85,6 +88,17 @@ public class JsonFormatter {
         mJSONWriter.name("callee").value(msg.getCallee());
         mJSONWriter.name("caller").value(msg.getCaller());
         mJSONWriter.name("state").value(msg.getState());
+        mJSONWriter.name("userAck").value(false);
+        mJSONWriter.name("receiveAck").value(false);
+        mJSONWriter.endObject();
+    }
+
+    private void formatUserMsg (IMessage baseMsg) throws IOException {
+        UserMsg msg = (UserMsg) baseMsg;
+        mJSONWriter.beginObject();
+        mJSONWriter.name("id").value(msg.getId());
+        mJSONWriter.name("userAck").value(msg.getAck());
+        mJSONWriter.name("receiveAck").value(false);
         mJSONWriter.endObject();
     }
 
