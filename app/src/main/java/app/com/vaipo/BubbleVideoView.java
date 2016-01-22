@@ -147,8 +147,9 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
         mButtonNo = (ImageButton) videoView.findViewById(R.id.imgNo);
         mViewImgLayout = (RelativeLayout) videoView.findViewById(R.id.viewImg);
         mTextView = (TextView) videoView.findViewById(R.id.textView);
-        mFormatter.initialize();
+        //mFormatter.initialize();
 
+        final Context context = this;
 
         mButtonYes.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -156,6 +157,8 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
                 mUserAck = true;
                 mUsrAckMsg.setId(mAppState.getID());
                 mUsrAckMsg.setAck(mUserAck);
+                mFormatter.initialize();
+
                 mRestAPI.call(RestAPI.USERACK, mFormatter.get(mUsrAckMsg), null);
                 mButtonYes.setVisibility(View.GONE);
                 mButtonNo.setVisibility(View.GONE);
@@ -179,8 +182,12 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
                 mUserAck = false;
                 mUsrAckMsg.setId(mAppState.getID());
                 mUsrAckMsg.setAck(mUserAck);
+                mFormatter.initialize();
+
                 mRestAPI.call(RestAPI.USERACK, mFormatter.get(mUsrAckMsg), null);
                 mViewImgLayout.setVisibility(View.GONE);
+
+                Utils.endVaipoCall(context);
             }
         });
 
@@ -322,8 +329,9 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
 
     @Override
     public void addSubscribeView(Subscriber subscriber) {
-        if (!mUserAck)
+        if (!mUserAck) {
             return;
+        }
 
         if (subscriber != null) {
             mSubscriberViewContainer.removeView(subscriber.getView());

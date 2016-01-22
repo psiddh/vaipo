@@ -76,11 +76,12 @@ public class Talk implements Session.SessionListener, Session.ConnectionListener
     private void initializePublisher(Context context) {
         mPublisher = new Publisher(context);
         mPublisher.setPublisherListener(this);
+        mPublisher.setPublishAudio(false);
         mPublisher.getRenderer().setStyle(BaseVideoRenderer.STYLE_VIDEO_SCALE,
                 BaseVideoRenderer.STYLE_VIDEO_FILL);
 
-        if (mCallback != null)
-            mCallback.addPublisherView(mPublisher);
+        //if (mCallback != null)
+        //    mCallback.addPublisherView(mPublisher);
     }
 
     public void pause() {
