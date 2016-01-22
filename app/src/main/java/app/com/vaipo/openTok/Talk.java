@@ -131,7 +131,7 @@ public class Talk implements Session.SessionListener, Session.ConnectionListener
         Log.d(TAG, "Session Connected");
 
         if (mPublisher != null) {
-            mSession.publish(mPublisher);
+            //mSession.publish(mPublisher);
         }
 
         if (mCallback != null)
