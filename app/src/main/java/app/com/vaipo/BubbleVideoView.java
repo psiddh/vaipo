@@ -320,10 +320,15 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
 
     @Override
     public void onDestroy() {
-       Log.d("URL : ", "Service Destroyed");
+       Log.d(TAG, "Service Destroyed");
         mUserAck = false;
-        mFormatter.destroy();;
+        try {
+            mFormatter.destroy();
+        } catch (Exception ex) {
+
+        }
         internalEnd();
+        //mTalk = null;
         super.onDestroy();
     }
 
@@ -389,6 +394,7 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
         lp.width = height/2;*/
 
         RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(mHeight / 8, mHeight / 8);
+        mPublisherViewContainer.removeView(publisher.getView());
         mPublisherViewContainer.addView(publisher.getView(), lp);
         //mPublisherViewContainer.setBackgroundResource(R.color.publisher_border_color);
         publisher.setStyle(BaseVideoRenderer.STYLE_VIDEO_SCALE, BaseVideoRenderer.STYLE_VIDEO_FILL);

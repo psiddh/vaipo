@@ -36,6 +36,7 @@ public class Talk implements Session.SessionListener, Session.ConnectionListener
 
     private Context mContext;
     private ITalkUICallbacks mCallback;
+    private boolean mSessionStopInitiated = false;
 
     public Talk() {
     }
@@ -70,6 +71,8 @@ public class Talk implements Session.SessionListener, Session.ConnectionListener
             mSession.setSessionListener(this);
             mSession.setConnectionListener(this);
             mSession.connect(mToken);
+
+            //mSession.onResume();
         }
     }
 
@@ -100,7 +103,17 @@ public class Talk implements Session.SessionListener, Session.ConnectionListener
     }
 
     public void stop() {
+        if (mSessionStopInitiated)
+            return;
+
+        mSessionStopInitiated = true;
+
         if (mSession != null) {
+            if (null != mPublisher)
+                mSession.unpublish(mPublisher);
+            if (null != mSubscriber)
+                mSession.unsubscribe(mSubscriber);
+            mSession.onPause();
             mSession.disconnect();
         }
     }
@@ -129,7 +142,7 @@ public class Talk implements Session.SessionListener, Session.ConnectionListener
     @Override
     public void onConnected(Session session) {
         Log.d(TAG, "Session Connected");
-
+        mSessionStopInitiated = false;
         if (mPublisher != null) {
             //mSession.publish(mPublisher);
         }
@@ -142,6 +155,7 @@ public class Talk implements Session.SessionListener, Session.ConnectionListener
     public void onDisconnected(Session session) {
         Log.d(TAG, "Session DisConnected");
 
+        mSessionStopInitiated = false;
         if (mCallback != null) {
             mCallback.removePublisherView(mPublisher);
             mCallback.removeSubscribeView(mSubscriber);
@@ -189,7 +203,7 @@ public class Talk implements Session.SessionListener, Session.ConnectionListener
         if (mCallback != null)
             mCallback.removeAllSubscribeView(mSubscriber);
 
-        mSubscriber = null;
+        //mSubscriber = null;
         //}
 
     }
