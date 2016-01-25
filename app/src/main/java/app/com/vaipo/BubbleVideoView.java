@@ -78,7 +78,7 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
     private RelativeLayout mViewImgLayout;
 
     private UserMsg mUsrAckMsg = new UserMsg();
-    private AppState mAppState = new AppState();
+    private AppState mAppState;
     private RestAPI mRestAPI = new RestAPI();
     private JsonFormatter mFormatter = new JsonFormatter();
 
@@ -128,6 +128,7 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
 
     @Override
     public int onStartCommand (Intent intent, int flags, int startId) {
+
         String sessionId = intent.getStringExtra("sessionId");
         String token = intent.getStringExtra("token");
 
@@ -281,6 +282,7 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String sessionId = prefs.getString("sessionId", "");
 
+        mAppState = (AppState) this.getApplicationContext();
         // Register to receive messages.
         // We are registering an observer (mMessageReceiver) to receive Intents
         // with actions named "custom-event-name".
@@ -456,7 +458,8 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
     private void internalEnd() {
         // Unregister since the activity is about to be closed.
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
-        mTalk.stop();
+        if (mTalk != null)
+            mTalk.stop();
         if (videoView != null) {
             windowManager.removeView(videoView);
             videoView = null;

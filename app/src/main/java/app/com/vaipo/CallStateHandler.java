@@ -37,7 +37,7 @@ public class CallStateHandler extends BroadcastReceiver {
     private  static boolean mIncomingCallAnswered = false;
 
 
-    private AppState appState  = new AppState();
+    private AppState appState;
 
     private RestAPI rest = new RestAPI();
     private JsonFormatter formatter = new JsonFormatter();
@@ -55,6 +55,7 @@ public class CallStateHandler extends BroadcastReceiver {
             String number = prefs.getString("number", "");
         Log.d(TAG, "DBG: Vaipo State " + state);
         Firebase.setAndroidContext(context);
+        appState = (AppState) context.getApplicationContext();
 
         if (intent.getAction().equals(Intent.ACTION_NEW_OUTGOING_CALL)) {
 
@@ -67,6 +68,9 @@ public class CallStateHandler extends BroadcastReceiver {
             message.setCaller(number);
             message.setCallee(outgoingNumber);
             message.setState(DialMsg.DIALING);
+
+            appState.setCallee(outgoingNumber);
+            appState.setCaller(number);
 
             rest.call(RestAPI.CALL, formatter.get(message), new RestAPI.onPostCallBackDone() {
                 @Override
@@ -102,6 +106,9 @@ public class CallStateHandler extends BroadcastReceiver {
                 message.setCaller(incomingNumber);
                 message.setCallee(number);
                 message.setState(DialMsg.INCOMING);
+
+                appState.setCaller(incomingNumber);
+                appState.setCallee(number);
                 rest.call(RestAPI.CALL, formatter.get(message), new RestAPI.onPostCallBackDone() {
                     @Override
                     public void onResult(Integer result) {
@@ -124,10 +131,12 @@ public class CallStateHandler extends BroadcastReceiver {
             if (mCall) {
                 message = new DialMsg();
                 message.setId(appState.getID());
+                message.setCallee(appState.getCallee());
+                message.setCaller(appState.getCaller());
                 message.setState(DialMsg.END);
                 rest.call(RestAPI.CALL, formatter.get(message), null);
 
-                        mCall = false; //Reverting the flag, indicating you are aware that there was call
+                mCall = false; //Reverting the flag, indicating you are aware that there was call
                 // Here do the rest of your operation you want
                 Intent i = new Intent(context, BubbleVideoView.class);
                 context.stopService(i);

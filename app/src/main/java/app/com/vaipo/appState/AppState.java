@@ -10,6 +10,9 @@ public class AppState extends Application {
     private UUIDFactory mUUIDFactory = null;
     private String number = "";
 
+    private String caller = "";
+    private String callee = "";
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -30,4 +33,21 @@ public class AppState extends Application {
     public String getNumber() {
         return this.number;
     }
+
+    public void setCaller(String caller) {
+        this.caller = caller;
+    }
+
+    public String getCaller() {
+        return caller;
+    }
+
+    public void setCallee(String callee) {
+        this.callee = callee;
+    }
+
+    public String getCallee() {
+        return callee;
+    }
+
 }
