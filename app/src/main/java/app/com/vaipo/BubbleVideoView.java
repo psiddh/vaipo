@@ -40,6 +40,8 @@ import com.opentok.android.BaseVideoRenderer;
 import com.opentok.android.Publisher;
 import com.opentok.android.Subscriber;
 
+import java.util.HashMap;
+
 import app.com.vaipo.appState.AppState;
 import app.com.vaipo.appState.Utils.Utils;
 import app.com.vaipo.format.JsonFormatter;
@@ -81,6 +83,8 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
     private AppState mAppState;
     private RestAPI mRestAPI = new RestAPI();
     private JsonFormatter mFormatter = new JsonFormatter();
+
+    private static boolean flag = false;
 
 
 
@@ -129,6 +133,12 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
     @Override
     public int onStartCommand (Intent intent, int flags, int startId) {
 
+        if (flag) {
+            Log.d(TAG, "Ignore this request to show the UI " + startId);
+            //stopSelf(startId);
+            return flags;
+        }
+        Log.d(TAG, "Start UI with startId " + startId);
         String sessionId = intent.getStringExtra("sessionId");
         String token = intent.getStringExtra("token");
 
@@ -212,6 +222,7 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
         params.height = mHeight/2;
         params.width = mHeight/2;
 
+        HashMap<String, String> map;
         //LinearLayout view1 = new LinearLayout(this);
         //view1.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
 
@@ -268,10 +279,11 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
 
             @Override
             public void onClick(View arg0) {
-            //initiatePopupWindow(videoView);
+                //initiatePopupWindow(videoView);
             }
         });
 
+        flag= true;
         return flags;
     }
 
@@ -320,8 +332,10 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
         notificationManager.notify(ID_NOTIFICATION, notification);
     }
 
+
     @Override
     public void onDestroy() {
+      flag = false;
        Log.d(TAG, "Service Destroyed");
         mUserAck = false;
         try {

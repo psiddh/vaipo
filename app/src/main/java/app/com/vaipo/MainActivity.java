@@ -102,13 +102,18 @@ public class MainActivity extends Activity {
         text2 = (EditText) findViewById(R.id.editText2);
         text3 = (EditText) findViewById(R.id.editText3);
 
+        if (simNumber.length() == 0 || simNumber.equals("")) {
+            String persistedNum = sharedPreferences.getString("number","");
+            number.setText(persistedNum);
+            number.setSelection(persistedNum.length());
+        }
+
         imgButton = (ImageButton) findViewById(R.id.imageButton);
         imgButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 final String number = text1.getText().toString();
                 String intlCode = text3.getText().toString();
-
                 text1.setVisibility(View.GONE);
                 text2.setText("Thank You. You can now use Vaipo using the number " + intlCode + " " + FormatStringAsPhoneNumber(number));
                 text3.setVisibility(View.GONE);
@@ -116,7 +121,6 @@ public class MainActivity extends Activity {
 
                 if (number != null || number != "") {
                     SharedPreferences.Editor editor = sharedPreferences.edit();
-                    editor.putString("intl_number", intlCode + number + "");
                     editor.putString("number", number + "");
                     editor.commit();
                 }
