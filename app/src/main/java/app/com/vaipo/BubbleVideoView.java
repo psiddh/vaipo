@@ -62,7 +62,7 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
     private FrameLayout mPublisherViewContainer;
     private FrameLayout mParentcontainer;
 
-    private Talk mTalk;
+    private Talk mTalk = null;
     // Spinning wheel for loading subscriber view
     private ProgressBar mLoadingSub;
 
@@ -87,6 +87,10 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
     private static boolean flag = false;
 
 
+    String mSessionId = "";
+    String mToken = "";
+    String mApiKey = "";
+
 
     // Our handler for received Intents. This will be called whenever an Intent
     // with an action named "end-vaipo-call" is broadcasted.
@@ -105,12 +109,14 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
                     mTextView.setText("Incoming Video Request!");
 
                     //mButtonYes.setVisibility(View.GONE);
-                    //mButtonNo.setVisibility(View.GONE);
+                    //mBu/ttonNo.setVisibility(View.GONE);
 
 
                 } else {
                     mViewImgLayout.setVisibility(View.GONE);
 
+                    if (mTalk == null)
+                        mTalk = new Talk(BubbleVideoView.this, mApiKey, mSessionId, mToken );
                     mTalk.notifyPublisher();
                     mTalk.notifySubscriber();
                 }
@@ -133,17 +139,19 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
     @Override
     public int onStartCommand (Intent intent, int flags, int startId) {
 
+        mSessionId = intent.getStringExtra("sessionId");
+        mToken = intent.getStringExtra("token");
+        mApiKey = intent.getStringExtra("apikey");
+
         if (flag) {
             Log.d(TAG, "Start UI with startId " + startId);
 
             return flags;
         }
         Log.d(TAG, "Start UI with startId " + startId);
-        String sessionId = intent.getStringExtra("sessionId");
-        String token = intent.getStringExtra("token");
-        String apiKey = intent.getStringExtra("apikey");
 
-        mTalk = new Talk(this, apiKey, sessionId, token );
+
+        mTalk = new Talk(BubbleVideoView.this, mApiKey, mSessionId, mToken );
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
@@ -161,7 +169,6 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
         mTextView = (TextView) videoView.findViewById(R.id.textView);
         //mFormatter.initialize();
 
-        final Context context = this;
 
         mButtonYes.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -178,6 +185,9 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
                 if (mReceiveAck) {
                     mViewImgLayout.setVisibility(View.GONE);
                     mParentcontainer.setVisibility(View.VISIBLE);
+
+                    if (mTalk == null)
+                        mTalk = new Talk(BubbleVideoView.this, mApiKey, mSessionId, mToken );
 
                     mTalk.notifyPublisher();
                     mTalk.notifySubscriber();
@@ -199,7 +209,7 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
                 mRestAPI.call(RestAPI.USERACK, mFormatter.get(mUsrAckMsg), null);
                 mViewImgLayout.setVisibility(View.GONE);
 
-                Utils.endVaipoCall(context);
+                Utils.endVaipoCall(BubbleVideoView.this);
             }
         });
 

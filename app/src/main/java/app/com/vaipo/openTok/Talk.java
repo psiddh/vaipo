@@ -19,9 +19,9 @@ import com.opentok.android.SubscriberKit;
 import java.util.ArrayList;
 
 
-public class Talk implements Session.SessionListener, Session.ConnectionListener, PublisherKit.PublisherListener, SubscriberKit.SubscriberListener, Subscriber.VideoListener {
+public class Talk implements Session.SessionListener, Session.ConnectionListener, PublisherKit.PublisherListener, SubscriberKit.SubscriberListener, Subscriber.VideoListener, Session.ReconnectionListener {
 
-    private static String TAG = "Talk";
+    private static String TAG = "TalkClass";
 
     private Session mSession;
     private ArrayList<Stream> mStreams = new ArrayList<Stream>();
@@ -60,6 +60,7 @@ public class Talk implements Session.SessionListener, Session.ConnectionListener
         if (mSession == null) {
             mSession = new Session(context, apiKey, sessionId);
             mSession.setSessionListener(this);
+            mSession.setReconnectionListener(this);
             mSession.setConnectionListener(this);
             mSession.connect(token);
         }
@@ -114,12 +115,14 @@ public class Talk implements Session.SessionListener, Session.ConnectionListener
     }
 
     public void notifyPublisher() {
+        if (mCallback != null)
+            mCallback.addPreview(mPublisher);
+
         if (mPublisher != null) {
             mSession.publish(mPublisher);
         }
 
-        if (mCallback != null)
-            mCallback.addPreview(mPublisher);
+
     }
 
     public void notifySubscriber() {
@@ -206,6 +209,8 @@ public class Talk implements Session.SessionListener, Session.ConnectionListener
     // PublisherKit.PublisherListener
     @Override
     public void onStreamCreated(PublisherKit publisherKit, Stream stream) {
+        Log.d(TAG, "Stream Created");
+
         /*mStreams.add(stream);
         if (mSubscriber == null) {
             subscribeToStream(stream);
@@ -214,6 +219,7 @@ public class Talk implements Session.SessionListener, Session.ConnectionListener
 
     @Override
     public void onStreamDestroyed(PublisherKit publisherKit, Stream stream) {
+        Log.d(TAG, "Stream Destroyed");
         //unsubscribeFromStream(stream);
     }
 
@@ -234,6 +240,8 @@ public class Talk implements Session.SessionListener, Session.ConnectionListener
 
     @Override
     public void onDisconnected(SubscriberKit subscriberKit) {
+        Log.d(TAG, "Subscriber Disconnected");
+
         if (mCallback != null) {
             mCallback.end();
         }
@@ -275,28 +283,35 @@ public class Talk implements Session.SessionListener, Session.ConnectionListener
 
     @Override
     public void onVideoDataReceived(SubscriberKit subscriberKit) {
+        Log.d(TAG, "Video Received - Subscriber");
+
         //if (mCallback != null)
-        //    mCallback.attachSubscriberView(mSubscriber);
+        //    mCallback.addSubscribeView(mSubscriber);
 
     }
 
     @Override
-    public void onVideoDisabled(SubscriberKit subscriberKit, String s) {
+    public void onVideoDisabled(SubscriberKit subscriberKit, String reason) {
+        Log.d(TAG, "Video Disabled - Subscriber " + reason);
 
     }
 
     @Override
-    public void onVideoEnabled(SubscriberKit subscriberKit, String s) {
+    public void onVideoEnabled(SubscriberKit subscriberKit, String reason) {
+        Log.d(TAG, "Video Enabled - Subscriber " + reason);
+
 
     }
 
     @Override
     public void onVideoDisableWarning(SubscriberKit subscriberKit) {
+        Log.d(TAG, "Video Disabled Warning - Subscriber");
 
     }
 
     @Override
     public void onVideoDisableWarningLifted(SubscriberKit subscriberKit) {
+        Log.d(TAG, "Video Disabled Warning Lifted - Subscriber");
 
     }
 
@@ -313,6 +328,18 @@ public class Talk implements Session.SessionListener, Session.ConnectionListener
         Log.d(TAG, "Session Connection Destroyed!");
         if (mCallback != null)
             mCallback.end();
+
+    }
+
+    @Override
+    public void onReconnecting(Session session) {
+        Log.d(TAG, "Session Reconnecting!");
+
+    }
+
+    @Override
+    public void onReconnected(Session session) {
+        Log.d(TAG, "Session Reconnected!");
 
     }
 }
