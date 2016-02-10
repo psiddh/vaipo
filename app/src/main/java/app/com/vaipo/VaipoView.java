@@ -66,8 +66,10 @@ public class VaipoView extends Activity implements ITalkUICallbacks {
         Intent intent = getIntent();
         sessionId = intent.getStringExtra("sessionId");
         String token = intent.getStringExtra("token");
+        String apiKey = intent.getStringExtra("apikey");
 
-        mTalk = new Talk(this, sessionId, token);
+
+        mTalk = new Talk(this, sessionId, token, apiKey);
 
         // Register to receive messages.
         // We are registering an observer (mMessageReceiver) to receive Intents

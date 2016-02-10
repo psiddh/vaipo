@@ -53,6 +53,7 @@ public class MainActivity extends Activity {
     private static final String STATE = "state";
     private static final String SESSIONID = "sessionId";
     private static final String TOKEN = "token";
+    private static final String APIKEY = "apikey";
     private static final String USERACK = "userack";
     private static final String RECEIVEACK = "receiveack";
 
@@ -207,66 +208,5 @@ public class MainActivity extends Activity {
                 return null;
         }
         return output;
-    }
-
-    private void setUpFirebaseListner() {
-        myFirebaseRef = new Firebase("https://vaipo.firebaseio.com/" + LINK + "/" + appState.getID());
-        myFirebaseRef.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                Log.d(TAG, "There are " + dataSnapshot.getChildrenCount() + " values @ " + myFirebaseRef);
-                String newSessionId = "-1", newToken = "-1";
-
-                for (DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
-                    if (postSnapshot.getKey().equalsIgnoreCase(STATE)) {
-                       /* int state = (int) postSnapshot.getValue();
-                        if (state == DialMsg.END)
-                            Utils.endVaipoCall(MainActivity.this);*/
-                    } else if (postSnapshot.getKey().equalsIgnoreCase(SESSIONID)) {
-                        newSessionId = (String) postSnapshot.getValue();
-                        if (newSessionId == null || newSessionId.equalsIgnoreCase("-1")) {
-                            //ignore
-                            newSessionId = "-1";
-                        }
-                        Log.d(TAG, "New SessionId Val " + newSessionId);
-                        SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putString("sessionId", newSessionId);
-                        //editor.commit();
-                    } else if (postSnapshot.getKey().equalsIgnoreCase(TOKEN)) {
-                        newToken = (String) postSnapshot.getValue();
-                        if (newToken == null || newToken.equalsIgnoreCase("-1")) {
-                            //ignore
-                            newToken = "-1";
-                        }
-                        Log.d(TAG, "New Token Val " + newToken);
-                        SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putString("token", newToken);
-                        //editor.commit();
-                    } else if (postSnapshot.getKey().equalsIgnoreCase(RECEIVEACK)) {
-                        if ((boolean) postSnapshot.getValue())
-                            Utils.receiveUserAck(MainActivity.this);
-                    }
-                    else {
-                        continue;
-                    }
-
-                }
-
-                if (!newSessionId.equalsIgnoreCase("-1") && CallStateHandler.mCall) {
-
-                    Intent i = new Intent(MainActivity.this, BubbleVideoView.class);
-                    i.putExtra("sessionId", newSessionId);
-                    i.putExtra("token", newToken);
-                    MainActivity.this.startService(i);
-                    //MainActivity.this.startActivity(i);
-                }
-            }
-
-            @Override
-            public void onCancelled(FirebaseError firebaseError) {
-
-            }
-        });
-
     }
 }

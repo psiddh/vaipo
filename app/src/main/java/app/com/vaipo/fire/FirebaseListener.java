@@ -23,6 +23,7 @@ public class FirebaseListener {
     private static final String STATE = "state";
     private final static String LINK = "link";
     private static final String TOKEN = "token";
+    private static final String APIKEY = "apikey";
     private static final String RECEIVEACK = "receiveack";
 
     private static Firebase myFirebaseRef = null;
@@ -38,7 +39,7 @@ public class FirebaseListener {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Log.d(TAG, "There are " + dataSnapshot.getChildrenCount() + " values @ " + myFirebaseRef);
-                String newSessionId = "-1", newToken = "-1";
+                String newSessionId = "-1", newToken = "-1", newApiKey = "-1";
 
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                     if (postSnapshot.getKey().equalsIgnoreCase(STATE)) {
@@ -65,6 +66,13 @@ public class FirebaseListener {
                         //SharedPreferences.Editor editor = sharedPreferences.edit();
                         //editor.putString("token", newToken);
                         //editor.commit();
+                    } else if (postSnapshot.getKey().equalsIgnoreCase(APIKEY)) {
+                        newApiKey = (String) postSnapshot.getValue();
+                        if (newApiKey == null || newApiKey.equalsIgnoreCase("-1")) {
+                            //ignore
+                            newApiKey = "-1";
+                        }
+                        Log.d(TAG, "New ApiKey Val " + newApiKey);
                     } else if (postSnapshot.getKey().equalsIgnoreCase(RECEIVEACK)) {
                         if ((boolean) postSnapshot.getValue())
                             Utils.receiveUserAck(context);
@@ -73,11 +81,15 @@ public class FirebaseListener {
                     }
 
                 }
+                if (!newSessionId.equalsIgnoreCase("-1") &&
+                        !newToken.equalsIgnoreCase("-1") &&
+                        !newApiKey.equalsIgnoreCase("-1") &&
+                        CallStateHandler.mCall) {
 
-                if (!newSessionId.equalsIgnoreCase("-1") && CallStateHandler.mCall) {
                     Intent i = new Intent(context, BubbleVideoView.class);
                     i.putExtra("sessionId", newSessionId);
                     i.putExtra("token", newToken);
+                    i.putExtra("apikey", newApiKey);
                     context.startService(i);
 
                     myFirebaseRef.removeEventListener(this);

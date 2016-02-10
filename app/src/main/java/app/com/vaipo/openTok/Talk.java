@@ -22,11 +22,6 @@ import java.util.ArrayList;
 public class Talk implements Session.SessionListener, Session.ConnectionListener, PublisherKit.PublisherListener, SubscriberKit.SubscriberListener, Subscriber.VideoListener {
 
     private static String TAG = "Talk";
-    private String mSessionId;
-    private String mApiKey = "45454732";
-    private String mApiSecret = "3a9dab0dac2e8486b64057dbb92e1f9bf67dcca6";
-    private String mToken = "T1==cGFydG5lcl9pZD00NTQyNTcwMiZzaWc9ZWY5ZmY1MjFmNWM4YTdkMGIzNDQxMzg3ZTU5NTdmYTM4MzU5NGJlNzpyb2xlPXB1Ymxpc2hlciZzZXNzaW9uX2lkPTJfTVg0ME5UUXlOVGN3TW41LU1UUTFNRGN5TXpneE5UWTFNSDQ1VkU5dmEwdHlSREpKVUdSekwxTlpRMjV0ZGpCaFdWaC1mZyZjcmVhdGVfdGltZT0xNDUwNzIzOTA2Jm5vbmNlPTAuMDU0NTM1NjA2NTAwMDM3NzUmZXhwaXJlX3RpbWU9MTQ1MTMyODQ1NyZjb25uZWN0aW9uX2RhdGE9";
-
 
     private Session mSession;
     private ArrayList<Stream> mStreams = new ArrayList<Stream>();
@@ -42,22 +37,18 @@ public class Talk implements Session.SessionListener, Session.ConnectionListener
     }
 
 
-    public Talk(Activity context, String sessionId, String token) {
+    public Talk(Activity context, String apiKey, String sessionId, String token) {
         mContext = context;
-        mSessionId = sessionId;
-        mToken = token;
-        initializeSession(context);
+        initializeSession(context, apiKey, sessionId, token);
         initializePublisher(context);
 
         mCallback = (ITalkUICallbacks) context;
         mStreams = new ArrayList<Stream>();
     }
 
-    public Talk(Service context, String sessionId, String token) {
+    public Talk(Service context, String apiKey, String sessionId, String token) {
         mContext = context;
-        mSessionId = sessionId;
-        mToken = token;
-        initializeSession(context);
+        initializeSession(context, apiKey, sessionId, token);
         initializePublisher(context);
 
         mCallback = (ITalkUICallbacks) context;
@@ -65,14 +56,12 @@ public class Talk implements Session.SessionListener, Session.ConnectionListener
     }
 
 
-    private void initializeSession(Context context) {
+    private void initializeSession(Context context, String apiKey, String sessionId, String token) {
         if (mSession == null) {
-            mSession = new Session(context, mApiKey, mSessionId);
+            mSession = new Session(context, apiKey, sessionId);
             mSession.setSessionListener(this);
             mSession.setConnectionListener(this);
-            mSession.connect(mToken);
-
-            //mSession.onResume();
+            mSession.connect(token);
         }
     }
 

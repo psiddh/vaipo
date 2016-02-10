@@ -134,15 +134,16 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
     public int onStartCommand (Intent intent, int flags, int startId) {
 
         if (flag) {
-            Log.d(TAG, "Ignore this request to show the UI " + startId);
-            //stopSelf(startId);
+            Log.d(TAG, "Start UI with startId " + startId);
+
             return flags;
         }
         Log.d(TAG, "Start UI with startId " + startId);
         String sessionId = intent.getStringExtra("sessionId");
         String token = intent.getStringExtra("token");
+        String apiKey = intent.getStringExtra("apikey");
 
-        mTalk = new Talk(this, sessionId, token);
+        mTalk = new Talk(this, apiKey, sessionId, token );
 
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
