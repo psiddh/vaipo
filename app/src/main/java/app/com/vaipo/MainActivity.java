@@ -13,6 +13,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -20,6 +21,7 @@ import android.widget.GridLayout;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
@@ -68,7 +70,7 @@ public class MainActivity extends Activity {
     private Firebase myFirebaseRef;
 
     private RelativeLayout relativeLayout;
-    private static boolean DEBUG_FAKE_UI = false;
+    private static boolean DEBUG_FAKE_UI = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,6 +122,7 @@ public class MainActivity extends Activity {
             number.setSelection(persistedNum.length());
         }
 
+        text2.setId(R.id.imgYes); //fake!
         imgButton = (ImageButton) findViewById(R.id.imageButton);
         imgButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -225,33 +228,83 @@ public class MainActivity extends Activity {
     }
 
     private void setupFakeUI() {
+
+        /*text1.setVisibility(View.GONE);
+        text2.setVisibility(View.GONE);
+        text3.setVisibility(View.GONE);
+        imgButton.setVisibility(View.GONE);*/
+        text2.setVisibility(View.GONE);
+
+        View rootFakeUI = getLayoutInflater().inflate(R.layout.fake_ui, null);
+
         RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
         layoutParams.addRule(RelativeLayout.BELOW, text2.getId());
 
-        final Button startButton = new Button(this);
-        startButton.setLayoutParams(layoutParams);
-        startButton.setText("Start ");
-        startButton.setId(R.id.menu_swap);
-        relativeLayout.addView(startButton);
 
-        RelativeLayout.LayoutParams layoutParams1 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-        layoutParams1.addRule(RelativeLayout.BELOW, startButton.getId());
+        relativeLayout.addView(rootFakeUI);
 
-        final Button stopButton = new Button(this);
-        stopButton.setLayoutParams(layoutParams1);
-        stopButton.setText("Stop ");
-        relativeLayout.addView(stopButton);
+        final Button startButton = (Button) rootFakeUI.findViewById(R.id.dialTo);
+        final Button stopButton = (Button) rootFakeUI.findViewById(R.id.end);
+        final Button incButton = (Button) rootFakeUI.findViewById(R.id.incFrom);
+
+        final AutoCompleteTextView fakeDialNum = (AutoCompleteTextView) rootFakeUI.findViewById(R.id.dialText);
+        final AutoCompleteTextView fakeIncNum = (AutoCompleteTextView) rootFakeUI.findViewById(R.id.incText);
+        final EditText curNum = (EditText) rootFakeUI.findViewById(R.id.curNumber);
+
 
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 String number = sharedPreferences.getString("number", "");
 
-                if (number.contains("6504268521"))
-                    setupFakeDialMsg("6504408319", number);
-                else
-                    setupFakeIncMsg("6504268521", number);
+                final String fakeNumberToDial = fakeDialNum.getText().toString();
+                final String fakeNumberInc = fakeIncNum.getText().toString();
+
+                if (fakeNumberToDial.isEmpty() && fakeNumberInc.isEmpty()) {
+                    Toast.makeText(MainActivity.this, "Enter atleast Dial or Incoming number", Toast.LENGTH_SHORT);
+                    return;
+                }
+
+                if (!fakeNumberToDial.isEmpty() && !fakeNumberInc.isEmpty()) {
+                    Toast.makeText(MainActivity.this, "Cannot have both Dial or Incoming number at the same time", Toast.LENGTH_SHORT);
+                    return;
+                }
+
+                if (!fakeNumberToDial.isEmpty())
+                    setupFakeDialMsg(fakeNumberToDial, number);
+                else if (!fakeNumberInc.isEmpty())
+                    setupFakeIncMsg(fakeNumberInc, number);
+
                 startButton.setEnabled(false);
+                incButton.setEnabled(false);
+            }
+        });
+
+        incButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String number = sharedPreferences.getString("number", "");
+
+                final String fakeNumberToDial = fakeDialNum.getText().toString();
+                final String fakeNumberInc = fakeIncNum.getText().toString();
+
+                if (fakeNumberToDial.isEmpty() && fakeNumberInc.isEmpty()) {
+                    Toast.makeText(MainActivity.this, "Enter atleast Dial or Incoming number", Toast.LENGTH_SHORT);
+                    return;
+                }
+
+                if (!fakeNumberToDial.isEmpty() && !fakeNumberInc.isEmpty()) {
+                    Toast.makeText(MainActivity.this, "Cannot have both Dial or Incoming number at the same time", Toast.LENGTH_SHORT);
+                    return;
+                }
+
+                if (!fakeNumberToDial.isEmpty())
+                    setupFakeDialMsg(fakeNumberToDial, number);
+                else if (!fakeNumberInc.isEmpty())
+                    setupFakeIncMsg(fakeNumberInc, number);
+
+                startButton.setEnabled(false);
+                incButton.setEnabled(false);
             }
         });
 
@@ -272,10 +325,13 @@ public class MainActivity extends Activity {
                 Utils.endVaipoCall(MainActivity.this);
 
                 startButton.setEnabled(true);
+                incButton.setEnabled(true);
 
             }
         });
 
+        final String number = text1.getText().toString();
+        curNum.setText(curNum.getText() + (number.isEmpty() ? "" : " " + number));
 
     }
     private void setupFakeDialMsg(String outgoingNumber, String myNumber) {
