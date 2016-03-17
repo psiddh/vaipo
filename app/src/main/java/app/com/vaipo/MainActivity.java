@@ -8,12 +8,18 @@ import android.preference.PreferenceManager;
 import android.telephony.PhoneNumberFormattingTextWatcher;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.GridLayout;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
@@ -24,6 +30,7 @@ import com.opentok.android.Subscriber;
 
 import java.text.DecimalFormat;
 import java.util.Locale;
+import java.util.zip.Inflater;
 
 import app.com.vaipo.appState.AppState;
 import app.com.vaipo.appState.Utils.Utils;
@@ -60,12 +67,16 @@ public class MainActivity extends Activity {
     public static String UUID = "";
     private Firebase myFirebaseRef;
 
+    private RelativeLayout relativeLayout;
+    private static boolean DEBUG_FAKE_UI = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        relativeLayout = (RelativeLayout) View.inflate(this, R.layout.activity_main, null);
         Firebase.setAndroidContext(this);
-        setContentView(R.layout.activity_main);
+        setContentView(relativeLayout);
 
         appState = (AppState)getApplication();
         formatter.initialize();
@@ -125,15 +136,18 @@ public class MainActivity extends Activity {
                     editor.putString("number", number + "");
                     editor.commit();
                 }
+
+                // TEST BLOCK
                 RegistrationMsg msg = new RegistrationMsg(appState.getID(), number);
                 rest.call(RestAPI.REGISTER, formatter.get(msg), new RestAPI.onPostCallBackDone() {
                     @Override
                     public void onResult(Integer result) {
                         Log.d(TAG, "Hurrah");
                         appState.setNumber(number);
-
                         UUID = appState.getID();
-                        //setUpFirebaseListnerWithoutInCall();
+
+                        if (DEBUG_FAKE_UI)
+                            setupFakeUI();
                     }
                 });
 
@@ -208,6 +222,100 @@ public class MainActivity extends Activity {
                 return null;
         }
         return output;
+    }
+
+    private void setupFakeUI() {
+        RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        layoutParams.addRule(RelativeLayout.BELOW, text2.getId());
+
+        final Button startButton = new Button(this);
+        startButton.setLayoutParams(layoutParams);
+        startButton.setText("Start ");
+        startButton.setId(R.id.menu_swap);
+        relativeLayout.addView(startButton);
+
+        RelativeLayout.LayoutParams layoutParams1 = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+        layoutParams1.addRule(RelativeLayout.BELOW, startButton.getId());
+
+        final Button stopButton = new Button(this);
+        stopButton.setLayoutParams(layoutParams1);
+        stopButton.setText("Stop ");
+        relativeLayout.addView(stopButton);
+
+        startButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String number = sharedPreferences.getString("number", "");
+
+                if (number.contains("6504268521"))
+                    setupFakeDialMsg("6504408319", number);
+                else
+                    setupFakeIncMsg("6504268521", number);
+                startButton.setEnabled(false);
+            }
+        });
+
+        stopButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                DialMsg message = new DialMsg();
+                message.setId(appState.getID());
+                message.setCallee(appState.getCallee());
+                message.setCaller(appState.getCaller());
+                message.setState(DialMsg.END);
+                formatter.destroy();
+                formatter.initialize();
+                rest.call(RestAPI.CALL, formatter.get(message), null);
+
+                Intent i = new Intent(MainActivity.this, BubbleVideoView.class);
+                MainActivity.this.stopService(i);
+                Utils.endVaipoCall(MainActivity.this);
+
+                startButton.setEnabled(true);
+
+            }
+        });
+
+
+    }
+    private void setupFakeDialMsg(String outgoingNumber, String myNumber) {
+        DialMsg message = new DialMsg();
+        message.setId(appState.getID());
+        message.setCaller(myNumber);
+        message.setCallee(outgoingNumber);
+        message.setState(DialMsg.DIALING);
+
+        appState.setCallee(outgoingNumber);
+        appState.setCaller(myNumber);
+
+        formatter.destroy();
+        formatter.initialize();
+        rest.call(RestAPI.CALL, formatter.get(message), new RestAPI.onPostCallBackDone() {
+            @Override
+            public void onResult(Integer result) {
+                setUpFirebaseListnerWithoutInCall();
+            }
+        });
+    }
+
+    private void setupFakeIncMsg(String incNumber, String myNumber) {
+        DialMsg message = new DialMsg();
+        message.setId(appState.getID());
+        message.setCaller(incNumber);
+        message.setCallee(myNumber);
+        message.setState(DialMsg.INCOMING);
+
+        appState.setCallee(myNumber);
+        appState.setCaller(incNumber);
+
+        formatter.destroy();
+        formatter.initialize();
+        rest.call(RestAPI.CALL, formatter.get(message), new RestAPI.onPostCallBackDone() {
+            @Override
+            public void onResult(Integer result) {
+                setUpFirebaseListnerWithoutInCall();
+            }
+        });
     }
 
     private void setUpFirebaseListnerWithoutInCall() {

@@ -33,6 +33,9 @@ public class Talk implements Session.SessionListener, Session.ConnectionListener
     private ITalkUICallbacks mCallback;
     private boolean mSessionStopInitiated = false;
 
+    private boolean wasPublisherNotified = false;
+    private boolean wasSubscriberNotified = false;
+
     public Talk() {
     }
 
@@ -40,7 +43,7 @@ public class Talk implements Session.SessionListener, Session.ConnectionListener
     public Talk(Activity context, String apiKey, String sessionId, String token) {
         mContext = context;
         initializeSession(context, apiKey, sessionId, token);
-        initializePublisher(context);
+        //initializePublisher(context);
 
         mCallback = (ITalkUICallbacks) context;
         mStreams = new ArrayList<Stream>();
@@ -49,7 +52,7 @@ public class Talk implements Session.SessionListener, Session.ConnectionListener
     public Talk(Service context, String apiKey, String sessionId, String token) {
         mContext = context;
         initializeSession(context, apiKey, sessionId, token);
-        initializePublisher(context);
+        //initializePublisher(context);
 
         mCallback = (ITalkUICallbacks) context;
         mStreams = new ArrayList<Stream>();
@@ -103,6 +106,7 @@ public class Talk implements Session.SessionListener, Session.ConnectionListener
                 mSession.unpublish(mPublisher);
             if (null != mSubscriber)
                 mSession.unsubscribe(mSubscriber);
+            wasPublisherNotified = wasSubscriberNotified = false;
             mSession.onPause();
             mSession.disconnect();
         }
@@ -115,6 +119,10 @@ public class Talk implements Session.SessionListener, Session.ConnectionListener
     }
 
     public void notifyPublisher() {
+        if (wasPublisherNotified) {
+            Log.d(TAG, "Publisher Already notified - Ignore this!!!");
+            return;
+        }
         if (mCallback != null)
             mCallback.addPreview(mPublisher);
 
@@ -122,10 +130,14 @@ public class Talk implements Session.SessionListener, Session.ConnectionListener
             mSession.publish(mPublisher);
         }
 
-
+        wasPublisherNotified = true;
     }
 
     public void notifySubscriber() {
+        if (wasSubscriberNotified) {
+            Log.d(TAG, "Subscriber Already notified - Ignore this!!!");
+            return;
+        }
         if (mCallback != null)
             mCallback.addSubscribeView(mSubscriber);
     }
@@ -139,8 +151,7 @@ public class Talk implements Session.SessionListener, Session.ConnectionListener
             //mSession.publish(mPublisher);
         }
 
-        if (mCallback != null)
-            mCallback.addPreview(mPublisher);
+        initializePublisher(mContext);
     }
 
     @Override
@@ -160,6 +171,8 @@ public class Talk implements Session.SessionListener, Session.ConnectionListener
 
         if (mCallback != null)
             mCallback.end();
+        wasPublisherNotified = wasSubscriberNotified = false;
+
 
     }
 
@@ -178,6 +191,7 @@ public class Talk implements Session.SessionListener, Session.ConnectionListener
             mSubscriber.getRenderer().setStyle(BaseVideoRenderer.STYLE_VIDEO_SCALE,
                     BaseVideoRenderer.STYLE_VIDEO_FILL);
             mSession.subscribe(mSubscriber);
+            wasSubscriberNotified = true;
         }
 
     }
@@ -285,8 +299,7 @@ public class Talk implements Session.SessionListener, Session.ConnectionListener
     public void onVideoDataReceived(SubscriberKit subscriberKit) {
         Log.d(TAG, "Video Received - Subscriber");
 
-        //if (mCallback != null)
-        //    mCallback.addSubscribeView(mSubscriber);
+        notifySubscriber();
 
     }
 
