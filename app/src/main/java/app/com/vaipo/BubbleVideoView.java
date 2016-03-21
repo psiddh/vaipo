@@ -34,6 +34,7 @@ import android.widget.LinearLayout;
 import android.widget.ListPopupWindow;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.opentok.android.BaseVideoRenderer;
@@ -78,6 +79,7 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
     private ImageButton  mButtonNo;
     private TextView mTextView;
     private RelativeLayout mViewImgLayout;
+    private ProgressBar mProgressBar;
 
     private UserMsg mUsrAckMsg = new UserMsg();
     private AppState mAppState;
@@ -114,6 +116,7 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
 
                 } else {
                     mViewImgLayout.setVisibility(View.GONE);
+                    mParentcontainer.setVisibility(View.VISIBLE);
 
                     if (mTalk == null)
                         mTalk = new Talk(BubbleVideoView.this, mApiKey, mSessionId, mToken );
@@ -167,6 +170,7 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
         mButtonNo = (ImageButton) videoView.findViewById(R.id.imgNo);
         mViewImgLayout = (RelativeLayout) videoView.findViewById(R.id.viewImg);
         mTextView = (TextView) videoView.findViewById(R.id.textView);
+        mProgressBar = (ProgressBar) videoView.findViewById(R.id.progressbar);
         //mFormatter.initialize();
 
 
@@ -185,6 +189,7 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
                 if (mReceiveAck) {
                     mViewImgLayout.setVisibility(View.GONE);
                     mParentcontainer.setVisibility(View.VISIBLE);
+                    //mProgressBar.setVisibility(View.VISIBLE);
 
                     if (mTalk == null)
                         mTalk = new Talk(BubbleVideoView.this, mApiKey, mSessionId, mToken );
@@ -366,6 +371,7 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
         }
 
         if (subscriber != null) {
+            mProgressBar.setVisibility(View.GONE);
             mSubscriberViewContainer.removeView(subscriber.getView());
             mSubscriberViewContainer.addView(subscriber.getView());
             //mSubscriberViewContainer.setPadding(3,3,3,3);
@@ -375,12 +381,14 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
 
     @Override
     public void removeSubscribeView(Subscriber subscriber) {
+        mProgressBar.setVisibility(View.GONE);
         if (subscriber != null)
             mSubscriberViewContainer.removeView(subscriber.getView());
     }
 
     @Override
     public void removeAllSubscribeView(Subscriber subscriber) {
+        mProgressBar.setVisibility(View.GONE);
         if (subscriber != null)
             mSubscriberViewContainer.removeAllViews();
     }
@@ -448,6 +456,7 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
         RelativeLayout.LayoutParams layoutParams = new RelativeLayout.LayoutParams(
                 getResources().getDisplayMetrics().widthPixels, getResources()
                 .getDisplayMetrics().heightPixels);
+        mProgressBar.setVisibility(View.GONE);
         mSubscriberViewContainer.removeView(subscriber.getView());
         mSubscriberViewContainer.addView(subscriber.getView(), layoutParams);
         subscriber.setStyle(BaseVideoRenderer.STYLE_VIDEO_SCALE,

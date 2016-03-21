@@ -75,7 +75,7 @@ public class Talk implements Session.SessionListener, Session.ConnectionListener
         mPublisher = new Publisher(context);
         mPublisher.setPublisherListener(this);
         if (MainActivity.DEBUG_FAKE_UI)
-        mPublisher.setPublishAudio(false);
+            mPublisher.setPublishAudio(false);
         mPublisher.getRenderer().setStyle(BaseVideoRenderer.STYLE_VIDEO_SCALE,
                 BaseVideoRenderer.STYLE_VIDEO_FILL);
 
