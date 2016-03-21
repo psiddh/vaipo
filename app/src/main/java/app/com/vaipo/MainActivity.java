@@ -414,7 +414,10 @@ public class MainActivity extends Activity {
 
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                     if (postSnapshot.getKey().equalsIgnoreCase(STATE)) {
+                        Long state = (Long) postSnapshot.getValue();
+                        if (state == DialMsg.END) {
                             Utils.endVaipoCall(MainActivity.this);
+                        }
                     } else if (postSnapshot.getKey().equalsIgnoreCase(SESSIONID)) {
                         newSessionId = (String) postSnapshot.getValue();
                         if (newSessionId == null || newSessionId.equalsIgnoreCase("-1")) {
