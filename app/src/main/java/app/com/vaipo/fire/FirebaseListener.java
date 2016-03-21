@@ -4,10 +4,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.firebase.client.ValueEventListener;
+
+import java.lang.ref.WeakReference;
 
 import app.com.vaipo.BubbleVideoView;
 import app.com.vaipo.CallStateHandler;
@@ -25,6 +28,8 @@ public class FirebaseListener {
     private static final String TOKEN = "token";
     private static final String APIKEY = "apikey";
     private static final String RECEIVEACK = "receiveack";
+    private static final String REMOTESTATE= "remotestate";
+
 
     private static Firebase myFirebaseRef = null;
     private static boolean isSetup = false;
@@ -43,9 +48,7 @@ public class FirebaseListener {
 
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                     if (postSnapshot.getKey().equalsIgnoreCase(STATE)) {
-                       /* int state = (int) postSnapshot.getValue();
-                        if (state == DialMsg.END)
-                            Utils.endVaipoCall(MainActivity.this);*/
+                            Utils.endVaipoCall(context);
                     } else if (postSnapshot.getKey().equalsIgnoreCase(SESSIONID)) {
                         newSessionId = (String) postSnapshot.getValue();
                         if (newSessionId == null || newSessionId.equalsIgnoreCase("-1")) {

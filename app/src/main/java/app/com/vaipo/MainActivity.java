@@ -36,6 +36,7 @@ import java.util.zip.Inflater;
 
 import app.com.vaipo.appState.AppState;
 import app.com.vaipo.appState.Utils.Utils;
+import app.com.vaipo.fire.FirebaseListener;
 import app.com.vaipo.format.JsonFormatter;
 import app.com.vaipo.messages.DialMsg;
 import app.com.vaipo.messages.RegistrationMsg;
@@ -70,7 +71,7 @@ public class MainActivity extends Activity {
     private Firebase myFirebaseRef;
 
     private RelativeLayout relativeLayout;
-    private static boolean DEBUG_FAKE_UI = true;
+    public static boolean DEBUG_FAKE_UI = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,6 +87,20 @@ public class MainActivity extends Activity {
         Locale locale = this.getResources().getConfiguration().locale;
         //String code = locale.getCountry();
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        Utils.setDebugInPrefs(this,false);
+
+        sharedPreferences.registerOnSharedPreferenceChangeListener(new SharedPreferences.OnSharedPreferenceChangeListener() {
+            @Override
+            public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+                if (key.equalsIgnoreCase(Utils.DEBUG_UI)) {
+                    DEBUG_FAKE_UI = sharedPreferences.getBoolean(key, false);
+                    if (DEBUG_FAKE_UI) {
+                        setupFakeUI();
+                    }
+                }
+            }
+        });
+
         TelephonyManager tm = (TelephonyManager)getSystemService(getApplicationContext().TELEPHONY_SERVICE);
         String countryCode = tm.getNetworkCountryIso();
         String code = "";
@@ -140,7 +155,6 @@ public class MainActivity extends Activity {
                     editor.commit();
                 }
 
-                // TEST BLOCK
                 RegistrationMsg msg = new RegistrationMsg(appState.getID(), number);
                 rest.call(RestAPI.REGISTER, formatter.get(msg), new RestAPI.onPostCallBackDone() {
                     @Override
@@ -149,13 +163,19 @@ public class MainActivity extends Activity {
                         appState.setNumber(number);
                         UUID = appState.getID();
 
-                        if (DEBUG_FAKE_UI)
+                        if (DEBUG_FAKE_UI || Utils.getDebugFromPrefs(MainActivity.this))
                             setupFakeUI();
                     }
                 });
 
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        FirebaseListener.destroy();
     }
 
     @Override
@@ -200,7 +220,19 @@ public class MainActivity extends Activity {
             return true;
         }
 
+        if (id == R.id.menu_debug) {
+            setupFakeUI();
+            return true;
+        }
+
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem debug = menu.findItem(R.id.menu_debug);
+        debug.setVisible(getResources().getBoolean(R.bool.debug));
+        return true;
     }
 
     private static String FormatStringAsPhoneNumber(String input) {
@@ -229,10 +261,8 @@ public class MainActivity extends Activity {
 
     private void setupFakeUI() {
 
-        /*text1.setVisibility(View.GONE);
-        text2.setVisibility(View.GONE);
-        text3.setVisibility(View.GONE);
-        imgButton.setVisibility(View.GONE);*/
+        setUpFirebaseListnerWithoutInCall();
+
         text2.setVisibility(View.GONE);
 
         View rootFakeUI = getLayoutInflater().inflate(R.layout.fake_ui, null);
@@ -349,7 +379,7 @@ public class MainActivity extends Activity {
         rest.call(RestAPI.CALL, formatter.get(message), new RestAPI.onPostCallBackDone() {
             @Override
             public void onResult(Integer result) {
-                setUpFirebaseListnerWithoutInCall();
+                //setUpFirebaseListnerWithoutInCall();
             }
         });
     }
@@ -369,7 +399,7 @@ public class MainActivity extends Activity {
         rest.call(RestAPI.CALL, formatter.get(message), new RestAPI.onPostCallBackDone() {
             @Override
             public void onResult(Integer result) {
-                setUpFirebaseListnerWithoutInCall();
+                //setUpFirebaseListnerWithoutInCall();
             }
         });
     }
@@ -382,11 +412,9 @@ public class MainActivity extends Activity {
                 Log.d(TAG, "There are " + dataSnapshot.getChildrenCount() + " values @ " + myFirebaseRef);
                 String newSessionId = "-1", newToken = "-1", newApiKey = "-1";
 
-                for (DataSnapshot postSnapshot: dataSnapshot.getChildren()) {
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                     if (postSnapshot.getKey().equalsIgnoreCase(STATE)) {
-                       /* int state = (int) postSnapshot.getValue();
-                        if (state == DialMsg.END)
-                            Utils.endVaipoCall(MainActivity.this);*/
+                            Utils.endVaipoCall(MainActivity.this);
                     } else if (postSnapshot.getKey().equalsIgnoreCase(SESSIONID)) {
                         newSessionId = (String) postSnapshot.getValue();
                         if (newSessionId == null || newSessionId.equalsIgnoreCase("-1")) {
@@ -419,8 +447,7 @@ public class MainActivity extends Activity {
                     } else if (postSnapshot.getKey().equalsIgnoreCase(RECEIVEACK)) {
                         if ((boolean) postSnapshot.getValue())
                             Utils.receiveUserAck(MainActivity.this);
-                    }
-                    else {
+                    } else {
                         continue;
                     }
 
@@ -446,4 +473,5 @@ public class MainActivity extends Activity {
         });
 
     }
+
 }

@@ -13,7 +13,7 @@ public class UUIDFactory {
     private static final String MAGIC_DEVICE_ID = "9774d56d682e549c";
     private static final String EMPTY_STRING = "";
 
-    protected static final String PREFS_FILE = "device_id.xml";
+    protected static final String PREFS_FILE = "device_id";
     protected static final String PREFS_DEVICE_ID = "device_id";
 
     protected static UUID uuid;
