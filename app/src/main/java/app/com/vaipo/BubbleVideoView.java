@@ -5,6 +5,7 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.app.TaskStackBuilder;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -19,6 +20,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -34,6 +36,7 @@ import android.widget.LinearLayout;
 import android.widget.ListPopupWindow;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
+import android.widget.RemoteViews;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -88,15 +91,28 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
 
     private static boolean flag = false;
 
+    private static boolean NOTIFICATION_SUPPORT = false;
+    private int mNotifyId = 963;
 
     String mSessionId = "";
     String mToken = "";
     String mApiKey = "";
 
 
+    public class notificationButtonListener extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getAction().equalsIgnoreCase("yes")) {
+                handleYes();
+            } else if (intent.getAction().equalsIgnoreCase("no")) {
+                handleNo();
+            }
+        }
+    }
+
     // Our handler for received Intents. This will be called whenever an Intent
     // with an action named "end-vaipo-call" is broadcasted.
-    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+    public BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             // Get extra data included in the Intent
@@ -177,28 +193,7 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
         mButtonYes.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mUserAck = true;
-                mUsrAckMsg.setId(mAppState.getID());
-                mUsrAckMsg.setAck(mUserAck);
-                mFormatter.initialize();
-
-                mRestAPI.call(RestAPI.USERACK, mFormatter.get(mUsrAckMsg), null);
-                mButtonYes.setVisibility(View.GONE);
-                mButtonNo.setVisibility(View.GONE);
-
-                if (mReceiveAck) {
-                    mViewImgLayout.setVisibility(View.GONE);
-                    mParentcontainer.setVisibility(View.VISIBLE);
-                    //mProgressBar.setVisibility(View.VISIBLE);
-
-                    if (mTalk == null)
-                        mTalk = new Talk(BubbleVideoView.this, mApiKey, mSessionId, mToken );
-
-                    mTalk.notifyPublisher();
-                    mTalk.notifySubscriber();
-                }
-                else
-                    mTextView.setText("Waiting for other party to accept! Pls Wait");
+                handleYes();
 
             }
         });
@@ -206,15 +201,7 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
         mButtonNo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mUserAck = false;
-                mUsrAckMsg.setId(mAppState.getID());
-                mUsrAckMsg.setAck(mUserAck);
-                mFormatter.initialize();
-
-                mRestAPI.call(RestAPI.USERACK, mFormatter.get(mUsrAckMsg), null);
-                mViewImgLayout.setVisibility(View.GONE);
-
-                Utils.endVaipoCall(BubbleVideoView.this);
+                handleNo();
             }
         });
 
@@ -243,61 +230,58 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
         //view1.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.MATCH_PARENT));
 
         //videoView.setBackgroundResource(R.drawable.bubbleview_bg);
-        windowManager.addView(videoView, params);
-        try {
-            videoView.setOnTouchListener(new View.OnTouchListener() {
-                private WindowManager.LayoutParams paramsF = params;
-                private int initialX;
-                private int initialY;
-                private float initialTouchX;
-                private float initialTouchY;
+        if (NOTIFICATION_SUPPORT) {
+            showNotification();
+        } else {
+            windowManager.addView(videoView, params);
 
-                @Override public boolean onTouch(View v, MotionEvent event) {
-                    switch (event.getAction()) {
-                        case MotionEvent.ACTION_DOWN:
+            try {
+                videoView.setOnTouchListener(new View.OnTouchListener() {
+                    private WindowManager.LayoutParams paramsF = params;
+                    private int initialX;
+                    private int initialY;
+                    private float initialTouchX;
+                    private float initialTouchY;
 
-                            // Get current time in nano seconds.
-                            long pressTime = System.currentTimeMillis();
+                    @Override public boolean onTouch(View v, MotionEvent event) {
+                        switch (event.getAction()) {
+                            case MotionEvent.ACTION_DOWN:
+
+                                // Get current time in nano seconds.
+                                long pressTime = System.currentTimeMillis();
 
 
-                            // If double click...
-                            if (pressTime - lastPressTime <= 300) {
-                                createNotification();
-                                stopSelf();
-                                mHasDoubleClicked = true;
-                            }
-                            else {     // If not double click....
-                                mHasDoubleClicked = false;
-                            }
-                            lastPressTime = pressTime;
-                            initialX = paramsF.x;
-                            initialY = paramsF.y;
-                            initialTouchX = event.getRawX();
-                            initialTouchY = event.getRawY();
-                            break;
-                        case MotionEvent.ACTION_UP:
-                            break;
-                        case MotionEvent.ACTION_MOVE:
-                            paramsF.x = initialX + (int) (event.getRawX() - initialTouchX);
-                            paramsF.y = initialY + (int) (event.getRawY() - initialTouchY);
-                            if (videoView != null)
-                                windowManager.updateViewLayout(videoView, paramsF);
-                            break;
+                                // If double click...
+                                if (pressTime - lastPressTime <= 300) {
+                                    //createNotification();
+                                    stopSelf();
+                                    mHasDoubleClicked = true;
+                                }
+                                else {     // If not double click....
+                                    mHasDoubleClicked = false;
+                                }
+                                lastPressTime = pressTime;
+                                initialX = paramsF.x;
+                                initialY = paramsF.y;
+                                initialTouchX = event.getRawX();
+                                initialTouchY = event.getRawY();
+                                break;
+                            case MotionEvent.ACTION_UP:
+                                break;
+                            case MotionEvent.ACTION_MOVE:
+                                paramsF.x = initialX + (int) (event.getRawX() - initialTouchX);
+                                paramsF.y = initialY + (int) (event.getRawY() - initialTouchY);
+                                if (videoView != null)
+                                    windowManager.updateViewLayout(videoView, paramsF);
+                                break;
+                        }
+                        return false;
                     }
-                    return false;
-                }
-            });
-        } catch (Exception e) {
-            // TODO: handle exception
-        }
-
-        videoView.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View arg0) {
-                //initiatePopupWindow(videoView);
+                });
+            } catch (Exception e) {
+                // TODO: handle exception
             }
-        });
+        }
 
         flag= true;
         return flags;
@@ -495,7 +479,11 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
         if (mTalk != null)
             mTalk.stop();
         if (videoView != null) {
-            windowManager.removeView(videoView);
+            if (NOTIFICATION_SUPPORT) {
+                cancelNotification();
+            } else {
+                windowManager.removeView(videoView);
+            }
             videoView = null;
         }
     }
@@ -535,6 +523,109 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
         } else {
             return getResources().getDrawable(id);
         }
+    }
+
+    private void showNotification1() {
+        RemoteViews remoteViews = new RemoteViews(getPackageName(),
+                R.layout.vaipo_view);
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
+                this)
+                .setSmallIcon(R.drawable.ic_vaipo)
+                .setContent(remoteViews);
+        // Creates an explicit intent for an Activity in your app
+        Intent resultIntent = new Intent(this, BubbleVideoView.class);
+        // The stack builder object will contain an artificial back stack for
+        // the
+        // started Activity.
+        // This ensures that navigating backward from the Activity leads out of
+        // your application to the Home screen.
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(this);
+        // Adds the back stack for the Intent (but not the Intent itself)
+        stackBuilder.addParentStack(MainActivity.class);
+        // Adds the Intent that starts the Activity to the top of the stack
+        stackBuilder.addNextIntent(resultIntent);
+        PendingIntent resultPendingIntent = stackBuilder.getPendingIntent(0,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+        remoteViews.setOnClickPendingIntent(R.id.imgYes, resultPendingIntent);
+        NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        // mId allows you to update the notification later on.
+        mNotificationManager.notify(mNotifyId, mBuilder.build());
+    }
+    private void showNotification() {
+        String ns = Context.NOTIFICATION_SERVICE;
+        NotificationManager notificationManager =
+                (NotificationManager) getSystemService(ns);
+
+        RemoteViews remoteView = new RemoteViews(getPackageName(),
+                R.layout.vaipo_view);
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(
+                this)
+                .setSmallIcon(R.drawable.ic_vaipo)
+                .setContent(remoteView);
+
+
+        //this is the intent that is supposed to be called when the
+        //button is clicked
+        Intent yesIntent = new Intent(this, notificationButtonListener.class);
+        yesIntent.setAction("yes");
+        PendingIntent yesPendingIntent = PendingIntent.getBroadcast(this, 0,
+                yesIntent, 0);
+
+        Intent noIntent = new Intent(this, notificationButtonListener.class);
+        noIntent.setAction("no");
+        PendingIntent noPendingIntent = PendingIntent.getBroadcast(this, 0,
+                noIntent, 0);
+
+        remoteView.setOnClickPendingIntent(R.id.imgYes,
+                yesPendingIntent);
+        remoteView.setOnClickPendingIntent(R.id.imgNo,
+                noPendingIntent);
+
+        notificationManager.notify(mNotifyId, mBuilder.build());
+    }
+
+    private void cancelNotification() {
+        String ns = Context.NOTIFICATION_SERVICE;
+        NotificationManager mNotificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+        mNotificationManager.cancel(mNotifyId);
+    }
+
+    private void handleYes() {
+        mUserAck = true;
+        mUsrAckMsg.setId(mAppState.getID());
+        mUsrAckMsg.setAck(mUserAck);
+        mFormatter.initialize();
+
+        mRestAPI.call(RestAPI.USERACK, mFormatter.get(mUsrAckMsg), null);
+        mButtonYes.setVisibility(View.GONE);
+        mButtonNo.setVisibility(View.GONE);
+
+        if (mReceiveAck) {
+            mViewImgLayout.setVisibility(View.GONE);
+            mParentcontainer.setVisibility(View.VISIBLE);
+            //mProgressBar.setVisibility(View.VISIBLE);
+
+            if (mTalk == null)
+                mTalk = new Talk(BubbleVideoView.this, mApiKey, mSessionId, mToken );
+
+            mTalk.notifyPublisher();
+            mTalk.notifySubscriber();
+        }
+        else
+            mTextView.setText("Waiting for other party to accept! Pls Wait");
+
+    }
+
+    private void handleNo() {
+        mUserAck = false;
+        mUsrAckMsg.setId(mAppState.getID());
+        mUsrAckMsg.setAck(mUserAck);
+        mFormatter.initialize();
+
+        mRestAPI.call(RestAPI.USERACK, mFormatter.get(mUsrAckMsg), null);
+        mViewImgLayout.setVisibility(View.GONE);
+
+        Utils.endVaipoCall(BubbleVideoView.this);
     }
 
 }
