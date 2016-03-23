@@ -89,7 +89,7 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
     private RestAPI mRestAPI = new RestAPI();
     private JsonFormatter mFormatter = new JsonFormatter();
 
-    private static boolean flag = true;
+    public static boolean flag = false;
 
     private static boolean NOTIFICATION_SUPPORT = true;
     private int mNotifyId = 963;
@@ -576,13 +576,11 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(ns);
 
-        RemoteViews remoteView = new RemoteViews(getPackageName(),
-                R.layout.userconfirmation_view);
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.ic_vaipo)
                 .setContentTitle(update)
                 .setCategory(Notification.CATEGORY_CALL)
-                .setPriority(Notification.PRIORITY_HIGH)
+                .setPriority(Notification.PRIORITY_MAX)
                 .setDefaults(Notification.DEFAULT_ALL)
                 .setWhen(0);
         if (showYes)

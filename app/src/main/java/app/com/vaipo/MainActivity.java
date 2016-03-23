@@ -465,7 +465,6 @@ public class MainActivity extends Activity {
                     i.putExtra("token", newToken);
                     i.putExtra("apikey", newApiKey);
                     MainActivity.this.startService(i);
-                    //MainActivity.this.startActivity(i);
                 }
             }
 
