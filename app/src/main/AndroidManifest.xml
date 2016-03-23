@@ -49,7 +49,7 @@
             </intent-filter>
 
         </receiver>
-        <receiver android:name=".BubbleVideoView$notificationButtonListener" />
+
         <service android:enabled="true" android:name=".BubbleVideoView"/>
 
     </application>

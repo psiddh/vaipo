@@ -16,6 +16,10 @@ public class Utils {
 
     public static final String DEBUG_UI = "debug";
 
+    public static final String ACTION_YES = "app.com.vaipo.YES";
+    public static final String ACTION_NO = "app.com.vaipo.NO";
+
+
     public static void endVaipoCall(Context context) {
         Intent intent = new Intent(END_VAIPO_CALL);
         LocalBroadcastManager.getInstance(context).sendBroadcast(intent);

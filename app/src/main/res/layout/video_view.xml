@@ -1,21 +1,9 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-                android:keepScreenOn="true"
-                android:layout_height="match_parent" tools:context=".MainActivity"
-                android:layout_gravity="bottom"
-                android:id ="@+id/rootView">
-
-        <include layout="@layout/userconfirmation_view"/>
-        <include layout="@layout/video_view"/>
-
-
-    <!--
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/parentcontainer"
-            android:visibility="invisible"
-            android:padding="3dp">
+                android:layout_height="match_parent"
+                android:id="@+id/parentcontainer"
+                android:visibility="invisible"
+                android:padding="3dp">
 
             <RelativeLayout
                 android:id="@+id/flipper"
@@ -45,8 +33,4 @@
                 android:layout_marginEnd="@dimen/publisher_right_margin"
                 />
 
-
-        </FrameLayout>
-        -->
-
-</RelativeLayout>
+</FrameLayout>
