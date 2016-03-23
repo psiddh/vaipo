@@ -3,4 +3,8 @@
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
+    <string name="wait_for_other_party">Waiting for other party to accept!</string>
+    <string name="incoming_vid_req">Incoming Video Request!</string>
+    <string name="enable_video">Enable Video ?</string>
+
 </resources>

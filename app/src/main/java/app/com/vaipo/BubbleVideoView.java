@@ -89,9 +89,9 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
     private RestAPI mRestAPI = new RestAPI();
     private JsonFormatter mFormatter = new JsonFormatter();
 
-    private static boolean flag = false;
+    private static boolean flag = true;
 
-    private static boolean NOTIFICATION_SUPPORT = false;
+    private static boolean NOTIFICATION_SUPPORT = true;
     private int mNotifyId = 963;
 
     String mSessionId = "";
@@ -111,10 +111,12 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
                 end();
             } else if (action.equals(Utils.RECEIVE_USER_ACK)) {
                 if (mUserAck == false) {
-                    if (NOTIFICATION_SUPPORT) {
+                    String incoming_vid_req = getResources().getString(R.string.incoming_vid_req);
 
+                    if (NOTIFICATION_SUPPORT) {
+                        showNotification(incoming_vid_req, true, true);
                     } else {
-                        mTextView.setText("Incoming Video Request!");
+                        mTextView.setText(incoming_vid_req);
                     }
 
                 } else {
@@ -179,7 +181,8 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
         });
 
         if (NOTIFICATION_SUPPORT) {
-            showNotification();
+            String enable_video = getResources().getString(R.string.enable_video);
+            showNotification(enable_video, true, true);
         } else {
             addVideoView();
         }
@@ -330,6 +333,13 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
 
     }
 
+    private void removeVideoView() {
+        if (videoView != null && videoView.isShown()) {
+            windowManager.removeView(videoView);
+            videoView = null;
+        }
+    }
+
     private void initiatePopupWindow(View anchor) {
         try {
             Display display = ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
@@ -377,7 +387,8 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
         if (!mUserAck) {
             return;
         }
-
+        if (NOTIFICATION_SUPPORT)
+            cancelNotification();
         if (subscriber != null) {
             mProgressBar.setVisibility(View.GONE);
             mSubscriberViewContainer.removeView(subscriber.getView());
@@ -427,14 +438,9 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
             return;
         if (publisher == null)
             return;
-        // Add video preview
-        /*LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT);
-        lp.gravity = Gravity.BOTTOM | Gravity.RIGHT;*/
-        /*lp.x = 0;
-        lp.y = height/2;
-        lp.height = height/2;
-        lp.width = height/2;*/
+
+        if (NOTIFICATION_SUPPORT)
+            cancelNotification();
 
         RelativeLayout.LayoutParams lp = new RelativeLayout.LayoutParams(mHeight / 8, mHeight / 8);
         mPublisherViewContainer.removeView(publisher.getView());
@@ -510,10 +516,8 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
         if (videoView != null) {
             if (NOTIFICATION_SUPPORT) {
                 cancelNotification();
-            } else {
-                windowManager.removeView(videoView);
             }
-            videoView = null;
+            removeVideoView();
         }
     }
     private int getWidth(WindowManager wm){
@@ -554,8 +558,7 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
         }
     }
 
-    private void showNotification() {
-
+    private void showNotification(String update, boolean showYes, boolean showNo) {
 
         //this is the intent that is supposed to be called when the
         //button is clicked
@@ -577,15 +580,18 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
                 R.layout.userconfirmation_view);
         NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.ic_vaipo)
-                .setContentTitle("Enable Video ?")
+                .setContentTitle(update)
                 .setCategory(Notification.CATEGORY_CALL)
                 .setPriority(Notification.PRIORITY_HIGH)
                 .setDefaults(Notification.DEFAULT_ALL)
-                .setWhen(0)
-                .addAction(new NotificationCompat.Action(R.drawable.ic_yes,
-                        "Accept", yesPendingIntent))
-                .addAction(new NotificationCompat.Action(R.drawable.ic_no,
-                        "Decline", noPendingIntent));
+                .setWhen(0);
+        if (showYes)
+            mBuilder.addAction(new NotificationCompat.Action(R.drawable.ic_yes,
+                            "Accept", yesPendingIntent));
+        if (showNo)
+            mBuilder.addAction(new NotificationCompat.Action(R.drawable.ic_no,
+                    "Decline", noPendingIntent));
+
         // Sets a title for the Inbox in expanded layout
         mBuilder.setStyle(new NotificationCompat.BigTextStyle(mBuilder)
         .bigText("Vaipo"));
@@ -633,10 +639,13 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
             mTalk.notifySubscriber();
         }
         else {
+            if (getResources() == null)
+                return;
+            String wait_for_other_party = getResources().getString(R.string.wait_for_other_party);
             if (NOTIFICATION_SUPPORT) {
-
+                showNotification(wait_for_other_party, false, true);
             } else {
-                mTextView.setText("Waiting for other party to accept! Pls Wait");
+                mTextView.setText(wait_for_other_party);
             }
         }
 
