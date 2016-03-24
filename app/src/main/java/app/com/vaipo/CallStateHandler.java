@@ -4,7 +4,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -14,7 +13,7 @@ import com.firebase.client.Firebase;
 import java.lang.reflect.Method;
 
 import app.com.vaipo.appState.AppState;
-import app.com.vaipo.appState.Utils.Utils;
+import app.com.vaipo.Utils.Utils;
 import app.com.vaipo.fire.FirebaseListener;
 import app.com.vaipo.format.JsonFormatter;
 import app.com.vaipo.messages.DialMsg;

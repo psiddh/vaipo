@@ -9,7 +9,6 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -24,7 +23,7 @@ import com.opentok.android.Publisher;
 import com.opentok.android.Subscriber;
 
 
-import app.com.vaipo.appState.Utils.Utils;
+import app.com.vaipo.Utils.Utils;
 import app.com.vaipo.openTok.ITalkUICallbacks;
 import app.com.vaipo.openTok.Talk;
 

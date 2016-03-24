@@ -4,17 +4,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import com.firebase.client.ChildEventListener;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.firebase.client.ValueEventListener;
 
-import java.lang.ref.WeakReference;
-
 import app.com.vaipo.BubbleVideoView;
 import app.com.vaipo.CallStateHandler;
-import app.com.vaipo.appState.Utils.Utils;
+import app.com.vaipo.Utils.Utils;
 
 /**
  * Created by siddartha on 1/17/16.

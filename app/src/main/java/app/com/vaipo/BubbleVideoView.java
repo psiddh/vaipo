@@ -5,24 +5,19 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.app.TaskStackBuilder;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.GradientDrawable;
 import android.os.Build;
-import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
@@ -32,22 +27,17 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.ListPopupWindow;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
-import android.widget.RemoteViews;
-import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.opentok.android.BaseVideoRenderer;
 import com.opentok.android.Publisher;
 import com.opentok.android.Subscriber;
 
-import java.util.HashMap;
-
 import app.com.vaipo.appState.AppState;
-import app.com.vaipo.appState.Utils.Utils;
+import app.com.vaipo.Utils.Utils;
 import app.com.vaipo.format.JsonFormatter;
 import app.com.vaipo.messages.UserMsg;
 import app.com.vaipo.openTok.ITalkUICallbacks;
@@ -98,7 +88,6 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
     String mToken = "";
     String mApiKey = "";
 
-
     public static BroadcastReceiver mActionListener;
 
     // Our handler for received Intents. This will be called whenever an Intent
@@ -114,7 +103,7 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
                     String incoming_vid_req = getResources().getString(R.string.incoming_vid_req);
 
                     if (NOTIFICATION_SUPPORT) {
-                        showNotification(incoming_vid_req, true, true);
+                        showNotification(incoming_vid_req, true, true, "Accept", "Decline");
                     } else {
                         mTextView.setText(incoming_vid_req);
                     }
@@ -182,7 +171,7 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
 
         if (NOTIFICATION_SUPPORT) {
             String enable_video = getResources().getString(R.string.enable_video);
-            showNotification(enable_video, true, true);
+            showNotification(enable_video, true, true, "Accept", "Decline");
         } else {
             addVideoView();
         }
@@ -558,7 +547,7 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
         }
     }
 
-    private void showNotification(String update, boolean showYes, boolean showNo) {
+    private void showNotification(String update, boolean showYes, boolean showNo, String yesButtonText, String noButtonText) {
 
         //this is the intent that is supposed to be called when the
         //button is clicked
@@ -572,6 +561,11 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
         PendingIntent noPendingIntent = PendingIntent.getBroadcast(this, 0,
                 noIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
+        Intent notifyIntent = new Intent(getApplicationContext(), MainActivity.class);
+        notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        PendingIntent clickIntent = PendingIntent.getActivity(BubbleVideoView.this, 51,
+                notifyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
         String ns = Context.NOTIFICATION_SERVICE;
         NotificationManager notificationManager =
                 (NotificationManager) getSystemService(ns);
@@ -582,13 +576,14 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
                 .setCategory(Notification.CATEGORY_CALL)
                 .setPriority(Notification.PRIORITY_MAX)
                 .setDefaults(Notification.DEFAULT_ALL)
+                //.setContentIntent(clickIntent)
                 .setWhen(0);
         if (showYes)
             mBuilder.addAction(new NotificationCompat.Action(R.drawable.ic_yes,
-                            "Accept", yesPendingIntent));
+                    yesButtonText, yesPendingIntent));
         if (showNo)
             mBuilder.addAction(new NotificationCompat.Action(R.drawable.ic_no,
-                    "Decline", noPendingIntent));
+                    noButtonText, noPendingIntent));
 
         // Sets a title for the Inbox in expanded layout
         mBuilder.setStyle(new NotificationCompat.BigTextStyle(mBuilder)
@@ -641,7 +636,7 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
                 return;
             String wait_for_other_party = getResources().getString(R.string.wait_for_other_party);
             if (NOTIFICATION_SUPPORT) {
-                showNotification(wait_for_other_party, false, true);
+                showNotification(wait_for_other_party, false, true, "", "End");
             } else {
                 mTextView.setText(wait_for_other_party);
             }

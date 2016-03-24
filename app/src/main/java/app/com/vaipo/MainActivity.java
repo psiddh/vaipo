@@ -8,18 +8,13 @@ import android.preference.PreferenceManager;
 import android.telephony.PhoneNumberFormattingTextWatcher;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.FrameLayout;
-import android.widget.GridLayout;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
@@ -27,20 +22,15 @@ import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.firebase.client.ValueEventListener;
-import com.opentok.android.Publisher;
-import com.opentok.android.Subscriber;
 
-import java.text.DecimalFormat;
 import java.util.Locale;
-import java.util.zip.Inflater;
 
 import app.com.vaipo.appState.AppState;
-import app.com.vaipo.appState.Utils.Utils;
+import app.com.vaipo.Utils.Utils;
 import app.com.vaipo.fire.FirebaseListener;
 import app.com.vaipo.format.JsonFormatter;
 import app.com.vaipo.messages.DialMsg;
 import app.com.vaipo.messages.RegistrationMsg;
-import app.com.vaipo.openTok.ITalkUICallbacks;
 import app.com.vaipo.rest.RestAPI;
 
 

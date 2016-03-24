@@ -1,10 +1,13 @@
-package app.com.vaipo.appState.Utils;
+package app.com.vaipo.Utils;
+
 
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
+
+import app.com.vaipo.UIDialogFragment;
 
 /**
  * Created by siddartha on 12/30/15.
