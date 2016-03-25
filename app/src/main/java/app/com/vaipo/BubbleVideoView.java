@@ -103,7 +103,7 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
                     String incoming_vid_req = getResources().getString(R.string.incoming_vid_req);
 
                     if (NOTIFICATION_SUPPORT) {
-                        showNotification(incoming_vid_req, true, true, "Accept", "Decline");
+                        showNotification(incoming_vid_req, true, true, true, "Accept", "Decline");
                     } else {
                         mTextView.setText(incoming_vid_req);
                     }
@@ -171,7 +171,7 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
 
         if (NOTIFICATION_SUPPORT) {
             String enable_video = getResources().getString(R.string.enable_video);
-            showNotification(enable_video, true, true, "Accept", "Decline");
+            showNotification(enable_video, true, true, true, "Accept", "Decline");
         } else {
             addVideoView();
         }
@@ -547,7 +547,7 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
         }
     }
 
-    private void showNotification(String update, boolean showYes, boolean showNo, String yesButtonText, String noButtonText) {
+    private void showNotification(String update, boolean showYes, boolean showNo, boolean useDefault, String yesButtonText, String noButtonText) {
 
         //this is the intent that is supposed to be called when the
         //button is clicked
@@ -575,7 +575,6 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
                 .setContentTitle(update)
                 .setCategory(Notification.CATEGORY_CALL)
                 .setPriority(Notification.PRIORITY_MAX)
-                .setDefaults(Notification.DEFAULT_ALL)
                 //.setContentIntent(clickIntent)
                 .setWhen(0);
         if (showYes)
@@ -584,6 +583,9 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
         if (showNo)
             mBuilder.addAction(new NotificationCompat.Action(R.drawable.ic_no,
                     noButtonText, noPendingIntent));
+
+        if (useDefault)
+            mBuilder.setDefaults(Notification.DEFAULT_ALL);
 
         // Sets a title for the Inbox in expanded layout
         mBuilder.setStyle(new NotificationCompat.BigTextStyle(mBuilder)
@@ -636,7 +638,7 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
                 return;
             String wait_for_other_party = getResources().getString(R.string.wait_for_other_party);
             if (NOTIFICATION_SUPPORT) {
-                showNotification(wait_for_other_party, false, true, "", "End");
+                showNotification(wait_for_other_party, false, true, false,"", "End");
             } else {
                 mTextView.setText(wait_for_other_party);
             }

@@ -360,6 +360,7 @@ public class MainActivity extends Activity {
         message.setCaller(myNumber);
         message.setCallee(outgoingNumber);
         message.setState(DialMsg.DIALING);
+        message.setPeerAutoDiscover(true);
 
         appState.setCallee(outgoingNumber);
         appState.setCaller(myNumber);

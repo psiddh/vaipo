@@ -12,6 +12,7 @@ public class DialMsg implements IMessage {
     private String token;
     private boolean userAck;
     private boolean receiveAck;
+    private boolean peerautodiscover;
 
     public static final int IDLE = 0;
     public static final int DIALING = 1;
@@ -27,7 +28,7 @@ public class DialMsg implements IMessage {
         state = IDLE;
         sessionId = "-1";
         token = "";
-        userAck = receiveAck = false;
+        userAck = receiveAck = peerautodiscover = false;
 
     }
 
@@ -64,4 +65,11 @@ public class DialMsg implements IMessage {
         this.state = state;
     }
 
+    public void setPeerAutoDiscover(boolean discover) {
+        this.peerautodiscover = discover;
+    }
+
+    public boolean getPeerAutoDiscover() {
+        return peerautodiscover;
+    }
 }

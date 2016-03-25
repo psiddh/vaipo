@@ -88,6 +88,7 @@ public class JsonFormatter {
         mJSONWriter.name("callee").value(msg.getCallee());
         mJSONWriter.name("caller").value(msg.getCaller());
         mJSONWriter.name("state").value(msg.getState());
+        mJSONWriter.name("peerautodiscover").value(msg.getPeerAutoDiscover());
         mJSONWriter.name("userAck").value(false);
         mJSONWriter.name("receiveAck").value(false);
         mJSONWriter.endObject();
