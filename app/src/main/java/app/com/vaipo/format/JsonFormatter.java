@@ -100,6 +100,8 @@ public class JsonFormatter {
         mJSONWriter.name("id").value(msg.getId());
         mJSONWriter.name("userAck").value(msg.getAck());
         mJSONWriter.name("receiveAck").value(false);
+        mJSONWriter.name("callee").value(msg.getCallee());
+        mJSONWriter.name("caller").value(msg.getCaller());
         mJSONWriter.endObject();
     }
 

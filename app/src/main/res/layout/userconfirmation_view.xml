@@ -1,9 +1,11 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 xmlns:tools="http://schemas.android.com/tools"
+                xmlns:fancy="http://schemas.android.com/apk/res-auto"
                 tools:context=".BubbleVideoService"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/viewImg"
+                android:gravity="center_horizontal|center_vertical"
                 android:visibility="visible">
         <ImageView
             android:id ="@+id/imgView"
@@ -16,32 +18,35 @@
             android:id ="@+id/textView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toRightOf="@id/imgView"
-            android:text="Enable Video for ongoing call ?"
+            android:text="Enable Video?"
             android:textStyle="italic"
-            android:textColor="#C73F17"
+            android:textColor="#E9575F"
             android:textSize="18sp"
 
-            />
+            android:layout_alignTop="@+id/imgView"
+            android:layout_toEndOf="@+id/imgView"/>
 
-        <ImageButton
-            android:id ="@+id/imgYes"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:clickable="true"
-            android:src="@drawable/ic_yes"
-            android:layout_below="@+id/textView"
-            android:layout_alignStart="@+id/textView"/>
+    <Button
+        android:id="@+id/imgYes"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_yes"
+        android:elevation="4dp"
+        android:layout_below="@+id/imgView"
+        android:text="Accept"/>
 
-        <ImageButton
-            android:id ="@+id/imgNo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom"
-            android:clickable="true"
-            android:src="@drawable/ic_no"
-            android:layout_below="@+id/textView"
-            android:layout_alignEnd="@+id/textView"
-            android:layout_marginEnd="66dp"/>
-    </RelativeLayout>
+    <Button
+        android:id="@+id/imgNo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_no"
+
+        android:elevation="4dp"
+        android:layout_below="@+id/imgView"
+        android:layout_toEndOf="@+id/imgYes"
+        android:layout_marginStart="31dp"
+        android:text="Decline"/>
+
+
+
+</RelativeLayout>

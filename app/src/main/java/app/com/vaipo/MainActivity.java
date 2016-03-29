@@ -56,6 +56,8 @@ public class MainActivity extends Activity {
     private static final String APIKEY = "apikey";
     private static final String USERACK = "userack";
     private static final String RECEIVEACK = "receiveack";
+    public static final String PEER_AUTO_DISCOVER = "peerautodiscover";
+
 
     public static String UUID = "";
     private Firebase myFirebaseRef;
@@ -402,12 +404,21 @@ public class MainActivity extends Activity {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Log.d(TAG, "There are " + dataSnapshot.getChildrenCount() + " values @ " + myFirebaseRef);
                 String newSessionId = "-1", newToken = "-1", newApiKey = "-1";
+                boolean peerAutoDiscover = false;
 
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
                     if (postSnapshot.getKey().equalsIgnoreCase(STATE)) {
                         Long state = (Long) postSnapshot.getValue();
                         if (state == DialMsg.END) {
                             Utils.endVaipoCall(MainActivity.this);
+
+                            if (DEBUG_FAKE_UI) {
+                                View rootFakeUI = getLayoutInflater().inflate(R.layout.fake_ui, null);
+                                final Button startButton = (Button) rootFakeUI.findViewById(R.id.dialTo);
+                                final Button stopButton = (Button) rootFakeUI.findViewById(R.id.end);
+                                startButton.setEnabled(false);
+                                stopButton.setEnabled(false);
+                            }
                         }
                     } else if (postSnapshot.getKey().equalsIgnoreCase(SESSIONID)) {
                         newSessionId = (String) postSnapshot.getValue();
@@ -441,6 +452,8 @@ public class MainActivity extends Activity {
                     } else if (postSnapshot.getKey().equalsIgnoreCase(RECEIVEACK)) {
                         if ((boolean) postSnapshot.getValue())
                             Utils.receiveUserAck(MainActivity.this);
+                    } else if (postSnapshot.getKey().equalsIgnoreCase(PEER_AUTO_DISCOVER)) {
+                        peerAutoDiscover = (boolean) postSnapshot.getValue();
                     } else {
                         continue;
                     }
@@ -455,6 +468,8 @@ public class MainActivity extends Activity {
                     i.putExtra("sessionId", newSessionId);
                     i.putExtra("token", newToken);
                     i.putExtra("apikey", newApiKey);
+                    i.putExtra("peerautodiscover", peerAutoDiscover);
+
                     MainActivity.this.startService(i);
                 }
             }

@@ -25,8 +25,8 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.ImageButton;
 import android.widget.ListPopupWindow;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
@@ -39,6 +39,7 @@ import com.opentok.android.Subscriber;
 import app.com.vaipo.appState.AppState;
 import app.com.vaipo.Utils.Utils;
 import app.com.vaipo.format.JsonFormatter;
+import app.com.vaipo.messages.DialMsg;
 import app.com.vaipo.messages.UserMsg;
 import app.com.vaipo.openTok.ITalkUICallbacks;
 import app.com.vaipo.openTok.Talk;
@@ -68,8 +69,8 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
     private boolean mReceiveAck = false;
 
 
-    private ImageButton  mButtonYes;
-    private ImageButton  mButtonNo;
+    private Button mButtonYes;
+    private Button  mButtonNo;
     private TextView mTextView;
     private RelativeLayout mViewImgLayout;
     private ProgressBar mProgressBar;
@@ -87,6 +88,7 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
     String mSessionId = "";
     String mToken = "";
     String mApiKey = "";
+    boolean mPeerDiscover = false;
 
     public static BroadcastReceiver mActionListener;
 
@@ -141,15 +143,27 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
     @Override
     public int onStartCommand (Intent intent, int flags, int startId) {
 
-        mSessionId = intent.getStringExtra("sessionId");
-        mToken = intent.getStringExtra("token");
-        mApiKey = intent.getStringExtra("apikey");
+        String sessionId = intent.getStringExtra("sessionId");
+        String token = intent.getStringExtra("token");
+        String apiKey = intent.getStringExtra("apikey");
+        boolean peerDiscover = intent.getBooleanExtra("peerautodiscover", false);
+
+        if (isSameOpenTokSession(sessionId, token, apiKey)) {
+            Log.d(TAG, "Session Initiated. Ignore duplicate request with same session " + startId);
+            return flags;
+        }
 
         if (flag) {
             Log.d(TAG, "Start UI with startId - return " + startId);
             return flags;
         }
+
+        mSessionId = sessionId;
+        mToken = token;
+        mApiKey = apiKey;
+        mPeerDiscover = peerDiscover;
         Log.d(TAG, "Start UI with startId " + startId);
+
         mTalk = new Talk(BubbleVideoView.this, mApiKey, mSessionId, mToken );
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
@@ -170,8 +184,14 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
         });
 
         if (NOTIFICATION_SUPPORT) {
-            String enable_video = getResources().getString(R.string.enable_video);
-            showNotification(enable_video, true, true, true, "Accept", "Decline");
+            if (mPeerDiscover) {
+                //String wait_for_other_party = getResources().getString(R.string.wait_for_other_party);
+                //showNotification(wait_for_other_party, false, true, false,"", "End");
+                handleYes();
+            } else {
+                String enable_video = getResources().getString(R.string.enable_video);
+                showNotification(enable_video, true, true, true, "Accept", "Decline");
+            }
         } else {
             addVideoView();
         }
@@ -219,8 +239,8 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
 
         if (NOTIFICATION_SUPPORT) {
             View uiConfView = inflater.inflate(R.layout.userconfirmation_view, null);
-            mButtonYes = (ImageButton) uiConfView.findViewById(R.id.imgYes);
-            mButtonNo = (ImageButton) uiConfView.findViewById(R.id.imgNo);
+            mButtonYes = (Button) uiConfView.findViewById(R.id.imgYes);
+            mButtonNo = (Button) uiConfView.findViewById(R.id.imgNo);
             mViewImgLayout = (RelativeLayout) uiConfView.findViewById(R.id.viewImg);
             mTextView = (TextView) uiConfView.findViewById(R.id.textView);
 
@@ -231,8 +251,8 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
             mProgressBar = (ProgressBar) videoView.findViewById(R.id.progressbar);
         } else {
             videoView = inflater.inflate(R.layout.vaipo_view, null);
-            mButtonYes = (ImageButton) videoView.findViewById(R.id.imgYes);
-            mButtonNo = (ImageButton) videoView.findViewById(R.id.imgNo);
+            mButtonYes = (Button) videoView.findViewById(R.id.imgYes);
+            mButtonNo = (Button) videoView.findViewById(R.id.imgNo);
             mViewImgLayout = (RelativeLayout) videoView.findViewById(R.id.viewImg);
             mTextView = (TextView) videoView.findViewById(R.id.textView);
 
@@ -358,7 +378,7 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
 
     @Override
     public void onDestroy() {
-      flag = false;
+       flag = mPeerDiscover = false;
        Log.d(TAG, "Service Destroyed");
         mUserAck = false;
         try {
@@ -503,11 +523,14 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
         if (mTalk != null)
             mTalk.stop();
         if (videoView != null) {
-            if (NOTIFICATION_SUPPORT) {
-                cancelNotification();
-            }
             removeVideoView();
         }
+        if (NOTIFICATION_SUPPORT) {
+            cancelNotification();
+        }
+        mPeerDiscover = false;
+        mAppState.setCallee("");
+        mAppState.setCaller("");
     }
     private int getWidth(WindowManager wm){
         int width=0;
@@ -561,7 +584,7 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
         PendingIntent noPendingIntent = PendingIntent.getBroadcast(this, 0,
                 noIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
-        Intent notifyIntent = new Intent(getApplicationContext(), MainActivity.class);
+        Intent notifyIntent = new Intent(getApplicationContext(), ActivityDialog.class);
         notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         PendingIntent clickIntent = PendingIntent.getActivity(BubbleVideoView.this, 51,
                 notifyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -575,7 +598,9 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
                 .setContentTitle(update)
                 .setCategory(Notification.CATEGORY_CALL)
                 .setPriority(Notification.PRIORITY_MAX)
-                //.setContentIntent(clickIntent)
+                .setContentIntent(clickIntent)
+                .setOngoing(true)
+                .setAutoCancel(false)
                 .setWhen(0);
         if (showYes)
             mBuilder.addAction(new NotificationCompat.Action(R.drawable.ic_yes,
@@ -584,8 +609,8 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
             mBuilder.addAction(new NotificationCompat.Action(R.drawable.ic_no,
                     noButtonText, noPendingIntent));
 
-        if (useDefault)
-            mBuilder.setDefaults(Notification.DEFAULT_ALL);
+        //if (useDefault)
+        //    mBuilder.setDefaults(Notification.DEFAULT_ALL);
 
         // Sets a title for the Inbox in expanded layout
         mBuilder.setStyle(new NotificationCompat.BigTextStyle(mBuilder)
@@ -609,15 +634,9 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
 
 
     private void handleYes() {
-        mUserAck = true;
-        mUsrAckMsg.setId(mAppState.getID());
-        mUsrAckMsg.setAck(mUserAck);
-        mFormatter.initialize();
-
-        mRestAPI.call(RestAPI.USERACK, mFormatter.get(mUsrAckMsg), null);
+        sendAck(true);
         mButtonYes.setVisibility(View.GONE);
         mButtonNo.setVisibility(View.GONE);
-
         if (mReceiveAck) {
             if (NOTIFICATION_SUPPORT) {
                 addVideoView();
@@ -632,8 +651,7 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
 
             mTalk.notifyPublisher();
             mTalk.notifySubscriber();
-        }
-        else {
+        } else {
             if (getResources() == null)
                 return;
             String wait_for_other_party = getResources().getString(R.string.wait_for_other_party);
@@ -647,19 +665,39 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
     }
 
     private void handleNo() {
-        mUserAck = false;
-        mUsrAckMsg.setId(mAppState.getID());
-        mUsrAckMsg.setAck(mUserAck);
-        mFormatter.initialize();
-
-        mRestAPI.call(RestAPI.USERACK, mFormatter.get(mUsrAckMsg), null);
+        boolean test = true;
+        sendAck(false);
         mViewImgLayout.setVisibility(View.GONE);
-
         if (NOTIFICATION_SUPPORT) {
             cancelNotification();
         }
-
         Utils.endVaipoCall(BubbleVideoView.this);
+        //sendEndMsg();
+    }
+
+    private void sendAck(boolean isYes) {
+        mUserAck = isYes;
+        mUsrAckMsg.setId(mAppState.getID());
+        mUsrAckMsg.setCaller(mAppState.getCaller());
+        mUsrAckMsg.setCallee(mAppState.getCallee());
+        mUsrAckMsg.setAck(mUserAck);
+        mFormatter.initialize();
+        mRestAPI.call(RestAPI.USERACK, mFormatter.get(mUsrAckMsg), null);
+    }
+
+    private void sendEndMsg() {
+        DialMsg message = new DialMsg();
+        message.setId(mAppState.getID());
+        message.setCallee(mAppState.getCallee());
+        message.setCaller(mAppState.getCaller());
+        message.setState(DialMsg.END);
+        mFormatter.destroy();
+        mFormatter.initialize();
+        mRestAPI.call(RestAPI.CALL, mFormatter.get(message), null);
+    }
+
+    private boolean isSameOpenTokSession(String sessionId, String token, String apikKey) {
+        return mSessionId.equals(sessionId) && mToken.equals(token) && mApiKey.equals(apikKey);
     }
 
 }
