@@ -1,0 +1,71 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+                xmlns:custom="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:gravity="center_vertical"
+    tools:context=".FlagsActivity$PlaceholderFragment">
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/status_edittext"
+        android:layout_above="@+id/l1"
+        android:layout_marginBottom="47dp"
+        android:fontFamily="sans-serif"
+        android:textSize="24sp"
+        android:text="Hey! Please confirm your country code and enter your phone number."
+        android:editable="false"
+        android:elegantTextHeight="false"
+        android:background="#00000000"
+        android:textColor="#FA9A4F"
+        android:elevation="@dimen/activity_horizontal_margin" />
+
+    <LinearLayout
+        android:id="@+id/l1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Spinner
+            android:id="@+id/spinner"
+            android:layout_width="wrap_content"
+            android:layout_height="41dp"
+            android:background="@drawable/edit_box_drop_selector"
+            android:dropDownWidth="wrap_content"/>
+
+        <EditText
+            android:id="@+id/phone"
+            android:layout_height="41dp"
+            android:layout_width="0dp"
+            android:layout_marginLeft="0dp"
+            android:layout_marginRight="0dp"
+            android:layout_weight="1"
+            android:inputType="phone"
+            android:paddingLeft="10dp" />
+    </LinearLayout>
+
+    <com.dd.processbutton.iml.ActionProcessButton
+        android:layout_below="@id/l1"
+        android:id="@+id/btn_register"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginBottom="16dp"
+        android:text="@string/register"
+        android:layout_marginTop="20dp"
+        android:gravity="center"
+        android:textColor="@android:color/white"
+        android:textSize="18sp"
+        custom:pb_colorComplete="@color/green_complete"
+        custom:pb_colorNormal="@color/blue_normal"
+        custom:pb_colorPressed="@color/blue_pressed"
+        custom:pb_colorProgress="@color/purple_progress"
+        custom:pb_textComplete="Registration Complete!"
+        custom:pb_textProgress="Registration process in progress!" />
+
+
+</RelativeLayout>

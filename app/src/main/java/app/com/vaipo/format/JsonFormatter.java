@@ -10,6 +10,7 @@ import android.util.Log;
 import java.io.IOException;
 import java.io.StringWriter;
 
+import app.com.vaipo.messages.AuthenticateMsg;
 import app.com.vaipo.messages.DialMsg;
 import app.com.vaipo.messages.IMessage;
 import app.com.vaipo.messages.RegistrationMsg;
@@ -57,6 +58,8 @@ public class JsonFormatter {
                 formatDialMsg(msg);
             } else if (msg instanceof UserMsg) {
                 formatUserMsg(msg);
+            } else if (msg instanceof AuthenticateMsg) {
+                formatAuthenticateMsg(msg);
             } else {
                 throw new InstantiationError(" Unknown Class " + msg.getClass() + ", Unable to format!") ;
             }
@@ -85,12 +88,13 @@ public class JsonFormatter {
         DialMsg msg = (DialMsg) baseMsg;
         mJSONWriter.beginObject();
         mJSONWriter.name("id").value(msg.getId());
+        mJSONWriter.name("response").value(msg.getResponse());
+        mJSONWriter.name("state").value(msg.getState());
+        mJSONWriter.name("peerautodiscover").value(msg.getPeerautodiscover());
         mJSONWriter.name("callee").value(msg.getCallee());
         mJSONWriter.name("caller").value(msg.getCaller());
-        mJSONWriter.name("state").value(msg.getState());
-        mJSONWriter.name("peerautodiscover").value(msg.getPeerAutoDiscover());
-        mJSONWriter.name("userAck").value(false);
-        mJSONWriter.name("receiveAck").value(false);
+        //mJSONWriter.name("userAck").value(false);
+        //mJSONWriter.name("receiveAck").value(false);
         mJSONWriter.endObject();
     }
 
@@ -98,10 +102,18 @@ public class JsonFormatter {
         UserMsg msg = (UserMsg) baseMsg;
         mJSONWriter.beginObject();
         mJSONWriter.name("id").value(msg.getId());
-        mJSONWriter.name("userAck").value(msg.getAck());
-        mJSONWriter.name("receiveAck").value(false);
+        mJSONWriter.name("response").value(msg.getResponse());
         mJSONWriter.name("callee").value(msg.getCallee());
         mJSONWriter.name("caller").value(msg.getCaller());
+        mJSONWriter.endObject();
+    }
+
+    private void formatAuthenticateMsg (IMessage baseMsg) throws IOException {
+        AuthenticateMsg msg = (AuthenticateMsg) baseMsg;
+        mJSONWriter.beginObject();
+        mJSONWriter.name("id").value(msg.getId());
+        mJSONWriter.name("number").value(msg.getNumber());
+        mJSONWriter.name("code").value(msg.getCode());
         mJSONWriter.endObject();
     }
 

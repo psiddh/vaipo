@@ -50,14 +50,6 @@ public class MainActivity extends Activity {
     private JsonFormatter formatter = new JsonFormatter();
 
     private final String LINK = "link";
-    private static final String STATE = "state";
-    private static final String SESSIONID = "sessionId";
-    private static final String TOKEN = "token";
-    private static final String APIKEY = "apikey";
-    private static final String USERACK = "userack";
-    private static final String RECEIVEACK = "receiveack";
-    public static final String PEER_AUTO_DISCOVER = "peerautodiscover";
-
 
     public static String UUID = "";
     private Firebase myFirebaseRef;
@@ -362,19 +354,14 @@ public class MainActivity extends Activity {
         message.setCaller(myNumber);
         message.setCallee(outgoingNumber);
         message.setState(DialMsg.DIALING);
-        message.setPeerAutoDiscover(true);
+        message.setPeerautodiscover(true);
 
         appState.setCallee(outgoingNumber);
         appState.setCaller(myNumber);
 
         formatter.destroy();
         formatter.initialize();
-        rest.call(RestAPI.CALL, formatter.get(message), new RestAPI.onPostCallBackDone() {
-            @Override
-            public void onResult(Integer result) {
-                //setUpFirebaseListnerWithoutInCall();
-            }
-        });
+        rest.call(RestAPI.CALL, formatter.get(message), null);
     }
 
     private void setupFakeIncMsg(String incNumber, String myNumber) {
@@ -389,12 +376,7 @@ public class MainActivity extends Activity {
 
         formatter.destroy();
         formatter.initialize();
-        rest.call(RestAPI.CALL, formatter.get(message), new RestAPI.onPostCallBackDone() {
-            @Override
-            public void onResult(Integer result) {
-                //setUpFirebaseListnerWithoutInCall();
-            }
-        });
+        rest.call(RestAPI.CALL, formatter.get(message), null);
     }
 
     private void setUpFirebaseListnerWithoutInCall() {
@@ -406,58 +388,31 @@ public class MainActivity extends Activity {
                 String newSessionId = "-1", newToken = "-1", newApiKey = "-1";
                 boolean peerAutoDiscover = false;
 
-                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                    if (postSnapshot.getKey().equalsIgnoreCase(STATE)) {
-                        Long state = (Long) postSnapshot.getValue();
-                        if (state == DialMsg.END) {
-                            Utils.endVaipoCall(MainActivity.this);
+                DialMsg dialMsg = null;
+                try {
+                    dialMsg = dataSnapshot.getValue(DialMsg.class);
+                } catch (NullPointerException e) {
+                    return;
+                } catch (Exception e) {
+                    Log.d(TAG, "Oops error ! " + e.getMessage() + e.toString());
+                    return;
+                }
+                if (dialMsg == null)
+                    return;
 
-                            if (DEBUG_FAKE_UI) {
-                                View rootFakeUI = getLayoutInflater().inflate(R.layout.fake_ui, null);
-                                final Button startButton = (Button) rootFakeUI.findViewById(R.id.dialTo);
-                                final Button stopButton = (Button) rootFakeUI.findViewById(R.id.end);
-                                startButton.setEnabled(false);
-                                stopButton.setEnabled(false);
-                            }
-                        }
-                    } else if (postSnapshot.getKey().equalsIgnoreCase(SESSIONID)) {
-                        newSessionId = (String) postSnapshot.getValue();
-                        if (newSessionId == null || newSessionId.equalsIgnoreCase("-1")) {
-                            //ignore
-                            newSessionId = "-1";
-                        }
-                        Log.d(TAG, "New SessionId Val " + newSessionId);
-                        SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putString("sessionId", newSessionId);
-                        //editor.commit();
-                    } else if (postSnapshot.getKey().equalsIgnoreCase(TOKEN)) {
-                        newToken = (String) postSnapshot.getValue();
-                        if (newToken == null || newToken.equalsIgnoreCase("-1")) {
-                            //ignore
-                            newToken = "-1";
-                        }
-                        Log.d(TAG, "New Token Val " + newToken);
-                        SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putString("token", newToken);
-                        //editor.commit();
-                    } else if (postSnapshot.getKey().equalsIgnoreCase(APIKEY)) {
-                        newApiKey = (String) postSnapshot.getValue();
-                        if (newApiKey == null || newApiKey.equalsIgnoreCase("-1")) {
-                            //ignore
-                            newApiKey = "-1";
-                        }
-                        Log.d(TAG, "New APIKEY Val " + newToken);
-                        SharedPreferences.Editor editor = sharedPreferences.edit();
-                        editor.putString("apikey", newToken);
-                    } else if (postSnapshot.getKey().equalsIgnoreCase(RECEIVEACK)) {
-                        if ((boolean) postSnapshot.getValue())
-                            Utils.receiveUserAck(MainActivity.this);
-                    } else if (postSnapshot.getKey().equalsIgnoreCase(PEER_AUTO_DISCOVER)) {
-                        peerAutoDiscover = (boolean) postSnapshot.getValue();
-                    } else {
-                        continue;
-                    }
+                if (dialMsg.getState() == DialMsg.END) {
+                    Utils.endVaipoCall(MainActivity.this);
 
+                } else {
+                    newSessionId = dialMsg.getSessionId();
+                    newToken = dialMsg.getToken();
+                    newApiKey = dialMsg.getApikey();
+                    peerAutoDiscover = dialMsg.getPeerautodiscover();
+
+                    // TBD: Fix this hack!!
+                    boolean response = dialMsg.getResponse();
+                    if (response)
+                        Utils.sendUserResponse(MainActivity.this, response);
                 }
 
                 if (!newSessionId.equalsIgnoreCase("-1") &&

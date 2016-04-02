@@ -10,8 +10,8 @@ public class DialMsg implements IMessage {
     private int state;
     private String sessionId;
     private String token;
-    private boolean userAck;
-    private boolean receiveAck;
+    private boolean response;
+    private String apikey;
     private boolean peerautodiscover;
 
     public static final int IDLE = 0;
@@ -26,9 +26,10 @@ public class DialMsg implements IMessage {
         callee = "";
         caller = "";
         state = IDLE;
-        sessionId = "-1";
+        sessionId = "";
         token = "";
-        userAck = receiveAck = peerautodiscover = false;
+        apikey = "";
+        response = peerautodiscover = false;
 
     }
 
@@ -44,6 +45,9 @@ public class DialMsg implements IMessage {
         this.caller = number;
     }
 
+    public void setResponse(boolean response) {
+        this.response = response;
+    }
 
     public String getId() {
         return id;
@@ -57,6 +61,10 @@ public class DialMsg implements IMessage {
         return caller;
     }
 
+    public boolean getResponse() {
+        return response;
+    }
+
     public int getState() {
         return state;
     }
@@ -65,11 +73,23 @@ public class DialMsg implements IMessage {
         this.state = state;
     }
 
-    public void setPeerAutoDiscover(boolean discover) {
+    public void setPeerautodiscover(boolean discover) {
         this.peerautodiscover = discover;
     }
 
-    public boolean getPeerAutoDiscover() {
+    public boolean getPeerautodiscover() {
         return peerautodiscover;
+    }
+
+    public String getSessionId() {
+        return sessionId;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public String getApikey() {
+        return apikey;
     }
 }

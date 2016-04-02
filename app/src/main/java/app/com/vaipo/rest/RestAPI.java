@@ -26,6 +26,8 @@ public class RestAPI {
     public static String REGISTER = "register";
     public static String CALL = "call";
     public static String USERACK = "userack";
+    public static String AUTHENTICATE = "authenticate";
+    public static String RESEND = "resend";
 
 
     private AsyncTask<Void, Void, Integer> postRestCallAsync(final String baseUrl, final String message, final String msg, final onPostCallBackDone callback) {

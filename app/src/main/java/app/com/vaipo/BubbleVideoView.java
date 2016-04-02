@@ -66,7 +66,6 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
     private int mHeight, mWidth = 0;
 
     private boolean mUserAck = false;
-    private boolean mReceiveAck = false;
 
 
     private Button mButtonYes;
@@ -101,14 +100,16 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
             if (action.equals(Utils.END_VAIPO_CALL)) {
                 end();
             } else if (action.equals(Utils.RECEIVE_USER_ACK)) {
+                mUserAck = intent.getBooleanExtra(Utils.RECEIVE_USER_ACK, false);
                 if (mUserAck == false) {
-                    String incoming_vid_req = getResources().getString(R.string.incoming_vid_req);
+                    /*String incoming_vid_req = getResources().getString(R.string.incoming_vid_req);
 
                     if (NOTIFICATION_SUPPORT) {
                         showNotification(incoming_vid_req, true, true, true, "Accept", "Decline");
                     } else {
                         mTextView.setText(incoming_vid_req);
-                    }
+                    }*/
+                    handleNo();
 
                 } else {
 
@@ -124,7 +125,6 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
                     mTalk.notifyPublisher();
                     mTalk.notifySubscriber();
                 }
-                mReceiveAck = true;
 
             }
         }
@@ -172,7 +172,7 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
         mButtonYes.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                handleYes();
+                handleYes(true);
 
             }
         });
@@ -187,7 +187,7 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
             if (mPeerDiscover) {
                 //String wait_for_other_party = getResources().getString(R.string.wait_for_other_party);
                 //showNotification(wait_for_other_party, false, true, false,"", "End");
-                handleYes();
+                handleYes(false);
             } else {
                 String enable_video = getResources().getString(R.string.enable_video);
                 showNotification(enable_video, true, true, true, "Accept", "Decline");
@@ -222,7 +222,7 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
             public void onReceive(Context context, Intent intent) {
                 Log.d(TAG, "OnReceive " + intent.getAction());
                 if (intent.getAction().equalsIgnoreCase(Utils.ACTION_YES)) {
-                    handleYes();
+                    handleYes(true);
                 } else if (intent.getAction().equalsIgnoreCase(Utils.ACTION_NO)) {
                     handleNo();
                 }
@@ -575,12 +575,10 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
         //this is the intent that is supposed to be called when the
         //button is clicked
         Intent yesIntent = new Intent(Utils.ACTION_YES);//this, BubbleVideoView.class);
-        //yesIntent.setClass(BubbleVideoView.this, BroadcastReceiver.class);
         PendingIntent yesPendingIntent = PendingIntent.getBroadcast(this, 0,
                 yesIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
         Intent noIntent = new Intent(Utils.ACTION_NO);
-        //noIntent.setClass(BubbleVideoView.this, mActionListener.getClass());
         PendingIntent noPendingIntent = PendingIntent.getBroadcast(this, 0,
                 noIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
@@ -609,8 +607,8 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
             mBuilder.addAction(new NotificationCompat.Action(R.drawable.ic_no,
                     noButtonText, noPendingIntent));
 
-        //if (useDefault)
-        //    mBuilder.setDefaults(Notification.DEFAULT_ALL);
+        if (useDefault)
+            mBuilder.setDefaults(Notification.DEFAULT_ALL);
 
         // Sets a title for the Inbox in expanded layout
         mBuilder.setStyle(new NotificationCompat.BigTextStyle(mBuilder)
@@ -633,11 +631,12 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
     }
 
 
-    private void handleYes() {
-        sendAck(true);
+    private void handleYes(boolean ack) {
+        if (ack)
+            sendAck(ack);
         mButtonYes.setVisibility(View.GONE);
         mButtonNo.setVisibility(View.GONE);
-        if (mReceiveAck) {
+        if (ack) {
             if (NOTIFICATION_SUPPORT) {
                 addVideoView();
             } else {
@@ -665,14 +664,12 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
     }
 
     private void handleNo() {
-        boolean test = true;
         sendAck(false);
         mViewImgLayout.setVisibility(View.GONE);
         if (NOTIFICATION_SUPPORT) {
             cancelNotification();
         }
         Utils.endVaipoCall(BubbleVideoView.this);
-        //sendEndMsg();
     }
 
     private void sendAck(boolean isYes) {
@@ -680,20 +677,9 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
         mUsrAckMsg.setId(mAppState.getID());
         mUsrAckMsg.setCaller(mAppState.getCaller());
         mUsrAckMsg.setCallee(mAppState.getCallee());
-        mUsrAckMsg.setAck(mUserAck);
+        mUsrAckMsg.setResponse(isYes);
         mFormatter.initialize();
         mRestAPI.call(RestAPI.USERACK, mFormatter.get(mUsrAckMsg), null);
-    }
-
-    private void sendEndMsg() {
-        DialMsg message = new DialMsg();
-        message.setId(mAppState.getID());
-        message.setCallee(mAppState.getCallee());
-        message.setCaller(mAppState.getCaller());
-        message.setState(DialMsg.END);
-        mFormatter.destroy();
-        mFormatter.initialize();
-        mRestAPI.call(RestAPI.CALL, mFormatter.get(message), null);
     }
 
     private boolean isSameOpenTokSession(String sessionId, String token, String apikKey) {

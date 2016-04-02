@@ -6,5 +6,7 @@
     <string name="wait_for_other_party">Waiting for other party to accept!</string>
     <string name="incoming_vid_req">Incoming Video Request!</string>
     <string name="enable_video">Enable Video ?</string>
-
+    <string name="label_send">Send</string>
+    <string name="label_error_incorrect_phone">Incorrect phone</string>
+    <string name="register">Register</string>
 </resources>

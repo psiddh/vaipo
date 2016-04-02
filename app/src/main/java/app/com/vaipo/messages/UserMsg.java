@@ -5,27 +5,26 @@ package app.com.vaipo.messages;
  */
 public class UserMsg implements IMessage {
     private String uniqueId;
-    private boolean userAck;
-    private boolean receiveAck;
+    private boolean response;
     private String callee;
     private String caller;
 
     public UserMsg() {
         uniqueId = caller = callee ="";
-        userAck = receiveAck = false;
+        response = false;
     }
 
-    public UserMsg(String uniqueId, boolean userAck) {
+    public UserMsg(String uniqueId, boolean response) {
         this.uniqueId = uniqueId;
-        this.userAck = userAck;
+        this.response = response;
     }
 
     public void setId(String uniqueId) {
         this.uniqueId = uniqueId;
     }
 
-    public void setAck(boolean userAck) {
-        this.userAck = userAck;
+    public void setResponse(boolean response) {
+        this.response = response;
     }
 
     public void setCallee(String number) {
@@ -40,8 +39,8 @@ public class UserMsg implements IMessage {
         return uniqueId;
     }
 
-    public boolean getAck() {
-        return userAck;
+    public boolean getResponse() {
+        return response;
     }
 
     public String getCaller() {

@@ -74,8 +74,8 @@ public class FirebaseListener {
                         }
                         Log.d(TAG, "New ApiKey Val " + newApiKey);
                     } else if (postSnapshot.getKey().equalsIgnoreCase(RECEIVEACK)) {
-                        if ((boolean) postSnapshot.getValue())
-                            Utils.receiveUserAck(context);
+                        boolean response = (boolean) postSnapshot.getValue();
+                        Utils.sendUserResponse(context, response);
                     } else {
                         continue;
                     }
@@ -95,7 +95,7 @@ public class FirebaseListener {
                     myFirebaseRef.removeEventListener(this);
                     isSetup = false;
 
-                    final Firebase ref = new Firebase("https://vaipo.firebaseio.com/" + LINK + "/" + uuid + "/" + RECEIVEACK);
+                    /*final Firebase ref = new Firebase("https://vaipo.firebaseio.com/" + LINK + "/" + uuid + "/" + RECEIVEACK);
                     ref.addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
@@ -111,7 +111,7 @@ public class FirebaseListener {
                         public void onCancelled(FirebaseError firebaseError) {
 
                         }
-                    });
+                    });*/
                 }
             }
 

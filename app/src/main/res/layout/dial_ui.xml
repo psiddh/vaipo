@@ -1,0 +1,38 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                xmlns:custom="http://schemas.android.com/apk/res-auto"
+                xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+                android:keepScreenOn="true"
+                android:layout_height="match_parent" tools:context=".ChatActivity"
+                android:gravity="center|center_horizontal"
+                android:id ="@+id/rootView">
+
+
+    <com.dd.processbutton.iml.ActionProcessButton
+        android:id="@+id/dialTo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:layout_toEndOf="@+id/contacts_btn"
+        android:text="Contacts"
+        android:layout_marginTop="20dp"
+        android:gravity="center"
+        android:textColor="@android:color/white"
+        android:textSize="18sp"
+        custom:pb_colorComplete="@color/green_complete"
+        custom:pb_colorNormal="@color/blue_normal"
+        custom:pb_colorPressed="@color/blue_pressed"
+        custom:pb_colorProgress="@color/purple_progress"
+        />
+
+    <AutoCompleteTextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="textAutoComplete|phone"
+        android:ems="10"
+        android:hint="Video Call Someone ?"
+        android:id="@+id/contacts_btn"
+        android:layout_alignTop="@+id/dialTo"
+        android:layout_alignParentStart="true"/>
+
+
+</RelativeLayout>

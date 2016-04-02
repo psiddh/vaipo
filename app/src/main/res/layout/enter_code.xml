@@ -1,0 +1,98 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              xmlns:custom="http://schemas.android.com/apk/res-auto"
+              android:orientation="vertical"
+    android:gravity="bottom"
+    android:id="@+id/enter_code"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/editText"
+        android:layout_weight="1"
+        android:text="Enter Code:"
+        android:editable="false"
+        android:background="#00000000"
+        android:gravity="center"
+        android:textAlignment="center"
+        android:textColor="#6799AA"
+        android:textSize="32dp"
+        android:textStyle="bold|italic"
+        android:typeface="serif"
+        android:layout_gravity="center_horizontal"/>
+
+    <EditText
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:inputType="number"
+        android:ems="12"
+        android:hint="Check your SMS messages \n for the code"
+        android:id="@+id/edittext_code"
+        android:layout_gravity="center_horizontal"
+        />
+
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                  android:orientation="horizontal"
+                  android:gravity="center_horizontal"
+                  android:id="@+id/button_layout"
+                  android:layout_marginTop="10dp"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content">
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hapticFeedbackEnabled="true"
+            android:drawableLeft="@drawable/ic_yes"
+            android:text="Submit"
+            android:id="@+id/btn_submit"
+            android:layout_gravity="center_horizontal"
+            />
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:drawableLeft="@drawable/ic_no"
+            android:layout_marginLeft="15dp"
+            android:text="Dismiss"
+            android:hapticFeedbackEnabled="true"
+            android:id="@+id/btn_dismiss"
+            android:layout_gravity="center_horizontal"/>
+    </LinearLayout>
+
+    <com.dd.processbutton.iml.ActionProcessButton
+        android:layout_below="@id/button_layout"
+        android:id="@+id/btn_resend"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_marginBottom="16dp"
+        android:text="Resend Code"
+        android:layout_marginTop="20dp"
+        android:gravity="center"
+        android:textColor="@android:color/white"
+        android:textSize="18sp"
+        android:drawableLeft="@android:drawable/stat_notify_sync_noanim"
+        android:layout_gravity="center_horizontal"
+        custom:pb_colorComplete="@color/green_complete"
+        custom:pb_colorNormal="@color/blue_normal"
+        custom:pb_colorPressed="@color/blue_pressed"
+        custom:pb_colorProgress="@color/purple_progress"
+        custom:pb_textComplete="Resent the Code!"
+        custom:pb_textProgress="Sending new code!" />
+
+   <!-- <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_marginTop="15dp"
+        android:layout_height="wrap_content"
+        android:drawableLeft="@android:drawable/stat_notify_sync_noanim"
+        android:text="Resend the code"
+        android:hapticFeedbackEnabled="true"
+        android:id="@+id/btn_resend"
+        android:layout_gravity="center_horizontal"/> -->
+
+</LinearLayout>

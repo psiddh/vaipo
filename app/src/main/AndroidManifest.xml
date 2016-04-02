@@ -14,6 +14,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
 
 
     <application
@@ -22,14 +23,11 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".MainActivity"
-            android:configChanges="orientation"
+            android:name=".RegisterPhoneNumberActivity"
             android:launchMode="singleTask"
-            android:screenOrientation="portrait"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -42,6 +40,16 @@
         <activity android:name=".ActivityDialog"
                   android:label= "vaipo"
                   android:theme="@android:style/Theme.Holo.Dialog" >
+        </activity>
+
+        <activity android:name=".ActivityEnterCodeDialog"
+                  android:label= "@string/app_name"
+                  android:theme="@android:style/Theme.Holo.Dialog" >
+        </activity>
+        <activity
+            android:label="@string/app_name"
+            android:theme="@style/Theme.AppCompat.Light"
+            android:name="com.codinguser.android.contactpicker.ContactsPickerActivity">
         </activity>
 
         <receiver android:name=".CallStateHandler">
