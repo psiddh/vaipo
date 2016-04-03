@@ -4,6 +4,7 @@
                 android:keepScreenOn="true"
                 android:layout_height="match_parent" tools:context=".ChatActivity"
                 android:gravity="center|center_horizontal"
+                android:tag="contacts_dial"
                 android:id ="@+id/rootView">
 
 

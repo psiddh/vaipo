@@ -60,6 +60,7 @@ public class ActivityEnterCodeDialog extends Activity {
         dismiss.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Utils.sendRegistartionStatus(getApplicationContext(), false);
                 finish();
             }
         });
@@ -71,8 +72,7 @@ public class ActivityEnterCodeDialog extends Activity {
                     @Override
                     public void onResult(Integer result) {
                         Log.d(TAG, "Hurrah " + result);
-                        Utils.sendRegistartionStatus(getApplicationContext(), (result == Utils.REST_RESPONSE_OK));
-                        finish();
+                        //Utils.sendRegistartionStatus(getApplicationContext(), (result == Utils.REST_RESPONSE_OK));
                     }
                 });
             }

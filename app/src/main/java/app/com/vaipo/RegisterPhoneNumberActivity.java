@@ -31,6 +31,9 @@ import com.codinguser.android.contactpicker.ContactsPickerActivity;
 import com.firebase.client.Firebase;
 
 import app.com.vaipo.Utils.Utils;
+import app.com.vaipo.fire.FirebaseListener;
+import app.com.vaipo.messages.DialMsg;
+import app.com.vaipo.rest.RestAPI;
 
 
 public class RegisterPhoneNumberActivity extends Activity implements ContactsListenerAction, RegistrationVerificationListener {
@@ -38,7 +41,9 @@ public class RegisterPhoneNumberActivity extends Activity implements ContactsLis
 
     private boolean mIsRegisteredAlready = false;
 
-    private ContactsFragment mContactsFragment;
+    private ContactsFragment mContactsFragment = new ContactsFragment();
+    private VerifyPhoneFragment mVerifyPhoneFragment = new VerifyPhoneFragment();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,12 +53,14 @@ public class RegisterPhoneNumberActivity extends Activity implements ContactsLis
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
             mIsRegisteredAlready = prefs.getBoolean("registered", false);
 
+            mIsRegisteredAlready = false;
             if (!mIsRegisteredAlready) {
+                //mVerifyPhoneFragment = new VerifyPhoneFragment();
                 getFragmentManager().beginTransaction()
-                        .add(R.id.container, new VerifyPhoneFragment())
+                        .add(R.id.container, mVerifyPhoneFragment)
                         .commit();
             } else {
-                mContactsFragment = new ContactsFragment();
+                //mContactsFragment = new ContactsFragment();
                 getFragmentManager().beginTransaction()
                         .add(R.id.container, mContactsFragment)
                         .commit();
@@ -80,6 +87,13 @@ public class RegisterPhoneNumberActivity extends Activity implements ContactsLis
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        FirebaseListener.destroy();
     }
 
     @Override
@@ -123,12 +137,33 @@ public class RegisterPhoneNumberActivity extends Activity implements ContactsLis
     }
 
     @Override
+    public void onPostResume() {
+        super.onPostResume();
+        if (mIsRegisteredAlready) {
+            if(getFragmentManager().findFragmentByTag(mVerifyPhoneFragment.getTag()) != null) {
+                if (mVerifyPhoneFragment.isAdded()) {
+                    getFragmentManager()
+                            .beginTransaction().
+                            remove(mVerifyPhoneFragment).commit();
+                }
+            }
+            if (!mContactsFragment.isAdded()) {
+                getFragmentManager()
+                        .beginTransaction()
+                        .replace(R.id.container, mContactsFragment)
+                        .commit();
+            }
+        }
+
+    }
+
+    @Override
     public void onRegistrationDone() {
         mIsRegisteredAlready = true;
-        mContactsFragment = new ContactsFragment();
-        getFragmentManager().beginTransaction()
+        //mContactsFragment = new ContactsFragment();
+        /*getFragmentManager().beginTransaction()
                 .add(R.id.container, mContactsFragment)
-                .commit();
+                .commit();*/
     }
 
     @Override

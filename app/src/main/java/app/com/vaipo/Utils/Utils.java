@@ -34,11 +34,17 @@ public class Utils {
 
 
     public static void endVaipoCall(Context context) {
+        if (context == null) {
+            return;
+        }
         Intent intent = new Intent(END_VAIPO_CALL);
         LocalBroadcastManager.getInstance(context).sendBroadcast(intent);
     }
 
     public static void sendUserResponse(Context context, boolean response) {
+        if (context == null) {
+            return;
+        }
         Intent intent = new Intent(RECEIVE_USER_ACK);
         intent.putExtra(RECEIVE_USER_ACK, response);
         LocalBroadcastManager.getInstance(context).sendBroadcast(intent);

@@ -135,11 +135,17 @@ public class VerifyPhoneFragment extends BaseFlagFragment implements ProgressGen
         }
     }
 
+
+    @Override
+    public void onDestroyView() {
+        mCallback = null;
+        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mMessageReceiver);
+        super.onDestroyView();
+    }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
-
-        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mMessageReceiver);
     }
 
     @Override
@@ -175,7 +181,8 @@ public class VerifyPhoneFragment extends BaseFlagFragment implements ProgressGen
         editor.putBoolean("registered", true);
         editor.commit();
 
-        getActivity().getFragmentManager().beginTransaction().remove(this).commit();
+        //if (getActivity() != null)
+        //    getActivity().getFragmentManager().beginTransaction().remove(this).commitAllowingStateLoss();
 
         if (mCallback != null) {
             mCallback.onRegistrationDone();
@@ -202,7 +209,7 @@ public class VerifyPhoneFragment extends BaseFlagFragment implements ProgressGen
 
     @Override
     public void onError() {
-        btnRegister.setProgress(50);
+        //btnRegister.setProgress(50);
         progressGenerator.dismiss(btnRegister);
         mPhoneEdit.requestFocus();
         mPhoneEdit.setError("Registration Error!");
@@ -219,7 +226,8 @@ public class VerifyPhoneFragment extends BaseFlagFragment implements ProgressGen
     }
 
     private void sendRegisterMessage() {
-        number = validate();
+        String original = validate();
+        number = original.replaceAll("\\s+|-","");
         RegistrationMsg msg = new RegistrationMsg(appState.getID(), number);
         rest.call(RestAPI.REGISTER, formatter.get(msg), new RestAPI.onPostCallBackDone() {
             @Override
