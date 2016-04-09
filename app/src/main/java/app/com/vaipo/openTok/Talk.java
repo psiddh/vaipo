@@ -18,7 +18,9 @@ import com.opentok.android.SubscriberKit;
 
 import java.util.ArrayList;
 
+import app.com.vaipo.CallStateHandler;
 import app.com.vaipo.MainActivity;
+import app.com.vaipo.Utils.Utils;
 
 
 public class Talk implements Session.SessionListener, Session.ConnectionListener, PublisherKit.PublisherListener, SubscriberKit.SubscriberListener, Subscriber.VideoListener, Session.ReconnectionListener {
@@ -74,7 +76,7 @@ public class Talk implements Session.SessionListener, Session.ConnectionListener
     private void initializePublisher(Context context) {
         mPublisher = new Publisher(context);
         mPublisher.setPublisherListener(this);
-        if (true)
+        if (CallStateHandler.mCall)
             mPublisher.setPublishAudio(false);
         mPublisher.getRenderer().setStyle(BaseVideoRenderer.STYLE_VIDEO_SCALE,
                 BaseVideoRenderer.STYLE_VIDEO_FILL);

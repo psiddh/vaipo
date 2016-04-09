@@ -63,7 +63,11 @@ public class RegisterPhoneNumberActivity extends Activity implements ContactsLis
         isSIMReady = Utils.isSimReady(this);
 
         mIsRegisteredAlready = (Boolean)Utils.getPref(this, "registered");
-        int type = (Integer)Utils.getPref(this, "reg_type");
+        //int type = (Integer)Utils.getPref(this, "reg_type");
+        String uiPref = (String)Utils.getPref(this, "ui_preference");
+        if (uiPref.equals(Utils.UI_PREF_NONE + "")) {
+            Utils.putPref(this, "ui_preference", Utils.UI_PREF_OVERLAY + "");
+        }
 
         if (savedInstanceState == null) {
             if (!mIsRegisteredAlready) {

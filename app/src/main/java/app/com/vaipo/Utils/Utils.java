@@ -24,6 +24,7 @@ import app.com.vaipo.CallStateHandler;
 import app.com.vaipo.UIActivity;
 import app.com.vaipo.UIDialogFragment;
 import app.com.vaipo.appState.AppState;
+import app.com.vaipo.config.OpenTokConfig;
 import app.com.vaipo.format.JsonFormatter;
 import app.com.vaipo.messages.RegistrationMsg;
 import app.com.vaipo.rest.RestAPI;
@@ -61,9 +62,13 @@ public class Utils {
     public static final String ACTION_INCALL_SPKR = "app.com.vaipo.incall.action.spkr";
     public static final String ACTION_INCALL_MUTE = "app.com.vaipo.incall.action.mute";
 
-    public static final int REGISTER_TYPE_NONE= 1;
+    public static final int REGISTER_TYPE_NONE= 0;
     public static final int REGISTER_TYPE_NUMBER = 1;
     public static final int REGISTER_TYPE_EMAILID = 2;
+
+    public static final int UI_PREF_NONE= 0;
+    public static final int UI_PREF_OVERLAY = 1;
+    public static final int UI_PREF_FUL_SCREEN = 2;
 
     public static final Pattern EMAIL_ADDRESS_PATTERN = Pattern.compile(
             "[a-zA-Z0-9\\+\\.\\_\\%\\-\\+]{1,256}" +
@@ -162,6 +167,10 @@ public class Utils {
             editor.putBoolean(key, true);
         }
 
+        if (key.equals("ui_preference")) {
+            editor.putString(key, (String) val);
+        }
+
         editor.commit();
     }
 
@@ -187,6 +196,10 @@ public class Utils {
 
             if (key.equals("registered")) {
                 editor.putBoolean(key, true);
+            }
+
+            if (key.equals("ui_preference")) {
+                editor.putString(key, (String) vals.get(key));
             }
         }
 
@@ -215,6 +228,10 @@ public class Utils {
 
         if (key.equals("reg_type")) {
             return mySharedPreferences.getInt(key, Utils.REGISTER_TYPE_NONE);
+        }
+
+        if (key.equals("ui_preference")) {
+            return mySharedPreferences.getString(key, UI_PREF_NONE + "");
         }
 
         return null;
@@ -270,5 +287,49 @@ public class Utils {
 
     public static boolean isValidEmailAddress(CharSequence target) {
         return !TextUtils.isEmpty(target) && EMAIL_ADDRESS_PATTERN.matcher(target).matches();
+    }
+
+    public static void startUI(Context ctx) {
+        if (inCall()) {
+            return;
+        }
+
+        String uiPref = (String)Utils.getPref(ctx, "ui_preference");
+        if (uiPref.equals(Utils.UI_PREF_FUL_SCREEN)) {
+            Intent intent = new Intent(ctx, UIActivity.class);
+            ctx.startActivity(intent);
+        } else {
+            Intent i = new Intent(ctx, BubbleVideoView.class);
+            i.putExtra("sessionId", OpenTokConfig.SESSION_ID);
+            i.putExtra("token", OpenTokConfig.TOKEN);
+            i.putExtra("apikey", OpenTokConfig.API_KEY);
+            i.putExtra("peerautodiscover", true);
+
+            if (ctx != null)
+                ctx.startService(i);
+        }
+
+    }
+
+    public static boolean amITheCaller(Context ctx, AppState appState) {
+        String number = (String) getPref(ctx, "number");
+        String caller = "";
+        if (number == null || number.isEmpty()) {
+            return false;
+        }
+        if (appState != null) {
+            caller = appState.getCaller();
+        }
+
+        return getLastNDigits(caller).contains(getLastNDigits(number));
+    }
+
+    private static String getLastNDigits(String number) {
+        boolean email = isValidEmailAddress(number);
+
+        int LAST_N_NUMS = email ? number.length() : 8;
+        String lastNNums = (number == null || number.length() < LAST_N_NUMS) ?
+                number : number.substring(number.length() - LAST_N_NUMS);
+        return lastNNums;
     }
 }

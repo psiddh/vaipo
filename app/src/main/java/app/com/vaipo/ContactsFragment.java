@@ -377,10 +377,7 @@ public class ContactsFragment extends Fragment implements ProgressGenerator.OnCo
                     OpenTokConfig.SESSION_ID = newSessionId;
                     OpenTokConfig.TOKEN = newToken;
 
-                    if (!Utils.inCall()) {
-                        Intent intent = new Intent(ctx, UIActivity.class);
-                        startActivity(intent);
-                    }
+                    Utils.startUI(ctx);
                 }
             }
 

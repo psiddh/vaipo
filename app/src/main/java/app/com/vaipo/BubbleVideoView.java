@@ -197,7 +197,6 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
         Log.d(TAG, "Start UI with startId " + startId);
 
         mTalk = new Talk(BubbleVideoView.this, mApiKey, mSessionId, mToken );
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
         setupUI();
 
@@ -216,10 +215,17 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
         });
 
         if (NOTIFICATION_SUPPORT) {
-            if (mPeerDiscover) {
+            /*if (mPeerDiscover) {
                 //String wait_for_other_party = getResources().getString(R.string.wait_for_other_party);
                 //showNotification(wait_for_other_party, false, true, false,"", "End");
                 handleYes(false);
+            } else {
+                String enable_video = getResources().getString(R.string.enable_video);
+                showNotification(enable_video, true, true, true, "Accept", "Decline");
+            }*/
+            if (Utils.amITheCaller(this, mAppState)) {
+                String wait_for_other_party = getResources().getString(R.string.wait_for_other_party);
+                showNotification(wait_for_other_party, false, true, false,"", "End");
             } else {
                 String enable_video = getResources().getString(R.string.enable_video);
                 showNotification(enable_video, true, true, true, "Accept", "Decline");
@@ -646,8 +652,8 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
             mBuilder.addAction(new NotificationCompat.Action(R.drawable.ic_no,
                     noButtonText, noPendingIntent));
 
-        //if (useDefault)
-        //    mBuilder.setDefaults(Notification.DEFAULT_ALL);
+        if (useDefault)
+            mBuilder.setDefaults(Notification.DEFAULT_ALL);
 
         // Sets a title for the Inbox in expanded layout
         mBuilder.setStyle(new NotificationCompat.BigTextStyle(mBuilder)

@@ -420,7 +420,7 @@ public class MainActivity extends Activity {
                         !newToken.equalsIgnoreCase("-1") &&
                         !newApiKey.equalsIgnoreCase("-1")) {
 
-                    Intent i = new Intent(MainActivity.this, BubbleVideoView.class);
+                    /*Intent i = new Intent(MainActivity.this, BubbleVideoView.class);
                     i.putExtra("sessionId", newSessionId);
                     i.putExtra("token", newToken);
                     i.putExtra("apikey", newApiKey);
@@ -435,7 +435,11 @@ public class MainActivity extends Activity {
 
                         Intent intent = new Intent(MainActivity.this, UIActivity.class);
                         startActivity(intent);
-                    }
+                    }*/
+                    OpenTokConfig.API_KEY = newApiKey;
+                    OpenTokConfig.SESSION_ID = newSessionId;
+                    OpenTokConfig.TOKEN = newToken;
+                    Utils.startUI(MainActivity.this);
 
                 }
             }
