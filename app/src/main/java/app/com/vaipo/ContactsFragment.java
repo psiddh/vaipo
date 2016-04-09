@@ -204,8 +204,6 @@ public class ContactsFragment extends Fragment implements ProgressGenerator.OnCo
     public void onDestroy() {
         super.onDestroy();
         LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mMessageReceiver);
-        //LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mMessageReceiver);
-        enterState(State.LAUNCH_CONTACTS);
     }
 
     @Override

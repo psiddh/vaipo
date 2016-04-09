@@ -32,7 +32,7 @@
     <string name="title_edittext_preference">title_edittext_preference</string>
     <string name="title_second_section">Preferences</string>
     <string name="title_list_preference">Video Layout</string>
-    <string name="dialog_title_list_preference">dialog_title_list_preference</string>
+    <string name="dialog_title_list_preference">Choose UI Layout</string>
     <string name="title_intent_preference">title_intent_preference</string>
     <string name="dialog_title_edittext_preference">Video View Preferences</string>
     <string name="summary_edittext_preference">summary_edittext_preference</string>

@@ -43,6 +43,7 @@ public class SettingsFragment extends PreferenceFragment {
             CheckBoxPreference checkBoxPreference = (CheckBoxPreference) getPreferenceManager().findPreference("enable_incall");
             checkBoxPreference.setSummary("During regular PSTN calls. \n (Note that audio is still through PSTN calls only)");
             checkBoxPreference.setEnabled(true);
+            checkBoxPreference.setChecked(true);
         }
 
 
