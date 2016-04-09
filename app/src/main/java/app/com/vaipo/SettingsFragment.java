@@ -35,16 +35,16 @@ public class SettingsFragment extends PreferenceFragment {
                     }
                 };
 
-        LongSummaryCheckboxPreference checkBoxPreference = (LongSummaryCheckboxPreference) getPreferenceManager().findPreference("checkbox_preference");
-        checkBoxPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                if (((CheckBoxPreference)preference).isChecked()) {
+        if (!Utils.isSimReady(getActivity())) {
+            CheckBoxPreference checkBoxPreference = (CheckBoxPreference) getPreferenceManager().findPreference("enable_incall");
+            checkBoxPreference.setSummary("SIM State is either Bad / Unknown (or) \n SIM is Not Present. Disabling this feature");
+            checkBoxPreference.setEnabled(false);
+        } else {
+            CheckBoxPreference checkBoxPreference = (CheckBoxPreference) getPreferenceManager().findPreference("enable_incall");
+            checkBoxPreference.setSummary("During regular PSTN calls. \n (Note that audio is still through PSTN calls only)");
+            checkBoxPreference.setEnabled(true);
+        }
 
-                }
-                return false;
-            }
-        });
 
     }
 

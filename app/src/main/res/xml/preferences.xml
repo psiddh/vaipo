@@ -29,7 +29,7 @@
         android:title="@string/title_second_section">
 
         <ListPreference
-            android:key="ui_preference"
+            android:key="ue"
             android:title="@string/title_list_preference"
             android:summary="This option is used while showing the video call"
             android:dialogTitle="@string/dialog_title_list_preference"
@@ -37,11 +37,14 @@
             android:entryValues="@array/entryvalues_list_preference" />
 
 
-        <!-- <Preference
-            android:title="@string/title_intent_preference">
-            <intent android:action="android.intent.action.VIEW"
-                    android:data="http://codepath.com/" />
-        </Preference>-->
+        <CheckBoxPreference
+            android:key="enable_incall"
+            android:title="Enable Video UI"
+            android:checked="true"
+            android:icon="@drawable/video32"
+            android:summary="During regular PSTN calls. \n (Note that audio is still through PSTN calls only)"
+            android:enabled="true"
+            />
 
     </PreferenceCategory>
 

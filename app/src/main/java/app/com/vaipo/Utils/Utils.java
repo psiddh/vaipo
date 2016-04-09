@@ -66,9 +66,9 @@ public class Utils {
     public static final int REGISTER_TYPE_NUMBER = 1;
     public static final int REGISTER_TYPE_EMAILID = 2;
 
-    public static final int UI_PREF_NONE= 0;
-    public static final int UI_PREF_OVERLAY = 1;
-    public static final int UI_PREF_FUL_SCREEN = 2;
+    public static final int UI_PREF_NONE= -1;
+    public static final int UI_PREF_OVERLAY = 0;
+    public static final int UI_PREF_FUL_SCREEN = 1;
 
     public static final Pattern EMAIL_ADDRESS_PATTERN = Pattern.compile(
             "[a-zA-Z0-9\\+\\.\\_\\%\\-\\+]{1,256}" +
@@ -171,6 +171,10 @@ public class Utils {
             editor.putString(key, (String) val);
         }
 
+        if (key.equals("enable_incall")) {
+            editor.putBoolean(key, true);
+        }
+
         editor.commit();
     }
 
@@ -200,6 +204,10 @@ public class Utils {
 
             if (key.equals("ui_preference")) {
                 editor.putString(key, (String) vals.get(key));
+            }
+
+            if (key.equals("enable_incall")) {
+                editor.putBoolean(key, true);
             }
         }
 
@@ -232,6 +240,10 @@ public class Utils {
 
         if (key.equals("ui_preference")) {
             return mySharedPreferences.getString(key, UI_PREF_NONE + "");
+        }
+
+        if (key.equals("enable_incall")) {
+            return mySharedPreferences.getBoolean(key, false);
         }
 
         return null;
@@ -295,7 +307,7 @@ public class Utils {
         }
 
         String uiPref = (String)Utils.getPref(ctx, "ui_preference");
-        if (uiPref.equals(Utils.UI_PREF_FUL_SCREEN)) {
+        if (uiPref.equals(Utils.UI_PREF_FUL_SCREEN + "")) {
             Intent intent = new Intent(ctx, UIActivity.class);
             ctx.startActivity(intent);
         } else {

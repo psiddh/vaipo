@@ -79,6 +79,17 @@ public class ContactsFragment extends Fragment implements ProgressGenerator.OnCo
     private State mState = State.LAUNCH_CONTACTS;
 
     private boolean isContactNameSelected = false;
+
+    public BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (action.equals(Utils.END_VAIPO_CALL)) {
+                if (contactEditText != null)
+                    contactEditText.setText("");
+            }
+        }
+    };
     public ContactsFragment() {
 
     }
@@ -146,6 +157,9 @@ public class ContactsFragment extends Fragment implements ProgressGenerator.OnCo
                 }
             }
         });
+
+        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver,
+                new IntentFilter(Utils.END_VAIPO_CALL));
         return rootView;
     }
 
@@ -177,8 +191,19 @@ public class ContactsFragment extends Fragment implements ProgressGenerator.OnCo
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
+        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mMessageReceiver);
         //LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mMessageReceiver);
         enterState(State.LAUNCH_CONTACTS);
     }
@@ -239,10 +264,12 @@ public class ContactsFragment extends Fragment implements ProgressGenerator.OnCo
         if (mState == State.LAUNCH_CONTACTS) {
             btnContacts.setText("PICK");
             mOutGoingNumber = "";
+            isContactNameSelected = false;
         } else if (mState == State.DIAL) {
             btnContacts.setText("DIAL");
         } else if (mState == State.END) {
             btnContacts.setText("END");
+            isContactNameSelected = false;
         }
     }
 
@@ -343,6 +370,8 @@ public class ContactsFragment extends Fragment implements ProgressGenerator.OnCo
                     return;
 
                 if (dialMsg.getState() == DialMsg.END) {
+                    if (contactEditText != null)
+                        contactEditText.setText("");
                     Utils.endVaipoCall(ctx);
                 } else {
                     newSessionId = dialMsg.getSessionId();

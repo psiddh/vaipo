@@ -39,7 +39,7 @@
 
     <string-array name="entries_list_preference">
         <item>Overlay</item>
-        <item>Full Screen</item>
+        <item>Full Screen (Experimental Feature)</item>
     </string-array>
 
     <string-array name="entryvalues_list_preference">

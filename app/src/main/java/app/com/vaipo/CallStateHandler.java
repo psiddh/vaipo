@@ -46,6 +46,13 @@ public class CallStateHandler extends BroadcastReceiver {
 
     @Override
     public void onReceive(final Context context, Intent intent) {
+
+        Boolean isInCallUIEnabled = (Boolean) Utils.getPref(context, "enable_incall");
+        if (!isInCallUIEnabled) {
+            Log.d(TAG, "isInCallUIEnabled - " + isInCallUIEnabled + " Therefore return!");
+            return;
+        }
+
         String state = intent.getStringExtra(TelephonyManager.EXTRA_STATE);
         String msg = "Phone state changed to " + state;
         TelephonyManager mTelMgr = (TelephonyManager)context.getSystemService(context.TELEPHONY_SERVICE);

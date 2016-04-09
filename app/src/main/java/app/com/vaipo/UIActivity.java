@@ -2,6 +2,7 @@ package app.com.vaipo;
 
 import android.app.Activity;
 import android.app.FragmentTransaction;
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -52,6 +53,7 @@ import app.com.vaipo.fragments.PublisherStatusFragment;
 import app.com.vaipo.fragments.SubscriberControlFragment;
 import app.com.vaipo.fragments.SubscriberQualityFragment;
 import app.com.vaipo.messages.DialMsg;
+import app.com.vaipo.messages.UserMsg;
 import app.com.vaipo.rest.RestAPI;
 
 import java.util.ArrayList;
@@ -103,6 +105,34 @@ public class UIActivity extends Activity implements Session.SessionListener,
     private BroadcastReceiver mExtEventslistener;
 
     public static boolean inCall = false;
+    private int mNotifyId = 963;
+
+    public static BroadcastReceiver mActionListener;
+    private UserMsg mUsrAckMsg = new UserMsg();
+    private AppState mAppState;
+    private RestAPI mRestAPI = new RestAPI();
+    private JsonFormatter mFormatter = new JsonFormatter();
+    boolean mUserAck = false;
+
+    // Our handler for received Intents. This will be called whenever an Intent
+    // with an action named "end-vaipo-call" is broadcasted.
+    public BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (action.equals(Utils.END_VAIPO_CALL)) {
+                onEndCall();
+            } else if (action.equals(Utils.RECEIVE_USER_ACK)) {
+                mUserAck = intent.getBooleanExtra(Utils.RECEIVE_USER_ACK, false);
+                if (mUserAck == false) {
+                    handleNo();
+                } else {
+                    handleYes(true);
+                }
+
+            }
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -125,15 +155,45 @@ public class UIActivity extends Activity implements Session.SessionListener,
         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         LocalBroadcastManager.getInstance(this).registerReceiver(mExtEventslistener = new BroadcastReceiver() {
-             @Override
-             public void onReceive(Context context, Intent intent) {
-                 if (intent.getAction().equals(Utils.END_VAIPO_CALL)) {
-                     onEndCall();
-                 }
-             }
-         }, new IntentFilter(Utils.END_VAIPO_CALL));
-        sessionConnect();
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if (intent.getAction().equals(Utils.END_VAIPO_CALL)) {
+                    onEndCall();
+                }
+            }
+        }, new IntentFilter(Utils.END_VAIPO_CALL));
         inCall = true;
+
+        // TBD: secure this broadcast message!
+        mActionListener = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Log.d(LOGTAG, "OnReceive " + intent.getAction());
+                if (intent.getAction().equalsIgnoreCase(Utils.ACTION_YES)) {
+                    handleYes(true);
+                } else if (intent.getAction().equalsIgnoreCase(Utils.ACTION_NO)) {
+                    handleNo();
+                }
+            }
+        };
+
+        this.registerReceiver(mActionListener, new IntentFilter(Utils.ACTION_YES));
+        this.registerReceiver(mActionListener, new IntentFilter(Utils.ACTION_NO));
+        mAppState = (AppState) this.getApplicationContext();
+
+        if (Utils.amITheCaller(this, mAppState)) {
+            String wait_for_other_party = getResources().getString(R.string.wait_for_other_party);
+            showNotification(wait_for_other_party, false, true, false,"", "End");
+
+        } else {
+            String enable_video = getResources().getString(R.string.enable_video);
+            showNotification(enable_video, true, true, true, "Accept", "Decline");
+        }
+
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+                new IntentFilter(Utils.END_VAIPO_CALL));
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver,
+                new IntentFilter(Utils.RECEIVE_USER_ACK));
     }
 
     @Override
@@ -392,6 +452,7 @@ public class UIActivity extends Activity implements Session.SessionListener,
 
     @Override
     public void onDestroy() {
+        onEndCall();
         mNotificationManager.cancel(ClearNotificationService.NOTIFICATION_ID);
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mExtEventslistener);
         if (mIsBound) {
@@ -403,6 +464,7 @@ public class UIActivity extends Activity implements Session.SessionListener,
             mSession.disconnect();
         }
         inCall = false;
+        mUserAck = false;
         super.onDestroy();
     }
 
@@ -484,6 +546,9 @@ public class UIActivity extends Activity implements Session.SessionListener,
 
     @Override
     public void onEndCall() {
+        cancelNotification();
+        Utils.endVaipoCall(this);
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mExtEventslistener);
         {
             AppState appState = (AppState) this.getApplicationContext();
@@ -618,6 +683,7 @@ public class UIActivity extends Activity implements Session.SessionListener,
     public void onConnected(Session session) {
         Log.i(LOGTAG, "Connected to the session.");
         if (mPublisher == null) {
+            cancelNotification();
             mPublisher = new Publisher(this, "Publisher");
             mPublisher.setPublisherListener(this);
             attachPublisherView(mPublisher);
@@ -628,7 +694,7 @@ public class UIActivity extends Activity implements Session.SessionListener,
     @Override
     public void onDisconnected(Session session) {
         Log.i(LOGTAG, "Disconnected to the session.");
-
+        cancelNotification();
         if (mPublisher != null) {
             mPublisherViewContainer.removeView(mPublisher.getRenderer()
                     .getView());
@@ -643,6 +709,8 @@ public class UIActivity extends Activity implements Session.SessionListener,
         mSubscriber = null;
         mStreams.clear();
         mSession = null;
+
+        finish();
 
     }
 
@@ -959,6 +1027,90 @@ public class UIActivity extends Activity implements Session.SessionListener,
     public void onStreamVideoTypeChanged(Session session, Stream stream,
                                          StreamVideoType videoType) {
         Log.i(LOGTAG, "Stream video type changed");
+    }
+
+    private void showNotification(String update, boolean showYes, boolean showNo, boolean useDefault, String yesButtonText, String noButtonText) {
+
+        //this is the intent that is supposed to be called when the
+        //button is clicked
+        Intent yesIntent = new Intent(Utils.ACTION_YES);//this, BubbleVideoView.class);
+        PendingIntent yesPendingIntent = PendingIntent.getBroadcast(this, 0,
+                yesIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+
+        Intent noIntent = new Intent(Utils.ACTION_NO);
+        PendingIntent noPendingIntent = PendingIntent.getBroadcast(this, 0,
+                noIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+
+        Intent notifyIntent = new Intent(getApplicationContext(), ActivityDialog.class);
+        notifyIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        PendingIntent clickIntent = PendingIntent.getActivity(this, 51,
+                notifyIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        String ns = Context.NOTIFICATION_SERVICE;
+        NotificationManager notificationManager =
+                (NotificationManager) getSystemService(ns);
+
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
+                .setSmallIcon(R.drawable.ic_vaipo)
+                .setContentTitle(update)
+                .setCategory(Notification.CATEGORY_CALL)
+                .setPriority(Notification.PRIORITY_MAX)
+                .setContentIntent(clickIntent)
+                .setOngoing(true)
+                .setAutoCancel(false)
+                .setWhen(0);
+        if (showYes)
+            mBuilder.addAction(new NotificationCompat.Action(R.drawable.ic_yes,
+                    yesButtonText, yesPendingIntent));
+        if (showNo)
+            mBuilder.addAction(new NotificationCompat.Action(R.drawable.ic_no,
+                    noButtonText, noPendingIntent));
+
+        if (useDefault)
+            mBuilder.setDefaults(Notification.DEFAULT_ALL);
+
+        // Sets a title for the Inbox in expanded layout
+        mBuilder.setStyle(new NotificationCompat.BigTextStyle(mBuilder)
+                .bigText("Vaipo"));
+
+
+        notificationManager.notify(mNotifyId, mBuilder.build());
+    }
+
+    private void cancelNotification() {
+        String ns = Context.NOTIFICATION_SERVICE;
+        NotificationManager mNotificationManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+        mNotificationManager.cancel(mNotifyId);
+
+        try {
+            this.unregisterReceiver(mActionListener);
+        } catch (Exception e) {
+            Log.d(LOGTAG, e.getMessage());
+        }
+    }
+
+    private void handleYes(boolean ack) {
+        if (ack)
+            sendAck(ack);
+        String wait_for_other_party = getResources().getString(R.string.wait_for_other_party);
+        showNotification(wait_for_other_party, false, true, false, "", "End");
+        sessionConnect();
+    }
+
+    private void handleNo() {
+        sendAck(false);
+        cancelNotification();
+        finish();
+    }
+
+    private void sendAck(boolean isYes) {
+        mUserAck = isYes;
+        mUsrAckMsg.setId(mAppState.getID());
+        mUsrAckMsg.setCaller(mAppState.getCaller());
+        mUsrAckMsg.setCallee(mAppState.getCallee());
+        mUsrAckMsg.setResponse(isYes);
+        mFormatter.initialize();
+        mRestAPI.call(RestAPI.USERACK, mFormatter.get(mUsrAckMsg), null);
     }
 
 }
