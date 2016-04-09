@@ -42,9 +42,9 @@
         <item>Full Screen</item>
     </string-array>
 
-    <integer-array name="entryvalues_list_preference">
+    <string-array name="entryvalues_list_preference">
         <item>0</item>
         <item>1</item>
-    </integer-array>
+    </string-array>
 
 </resources>

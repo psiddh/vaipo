@@ -69,7 +69,7 @@ public class RegisterPhoneNumberActivity extends Activity implements ContactsLis
             if (!mIsRegisteredAlready) {
                 //mVerifyPhoneFragment = new VerifyPhoneFragment();
                         getFragmentManager().beginTransaction()
-                                .add(R.id.container, (type == Utils.REGISTER_TYPE_NUMBER) ? mVerifyPhoneFragment : mLinkIDsFragment)
+                                .add(R.id.container, (isSIMReady) ? mVerifyPhoneFragment : mLinkIDsFragment)
                                 .commit();
             } else {
                 //mContactsFragment = new ContactsFragment();

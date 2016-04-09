@@ -61,6 +61,7 @@ public class Utils {
     public static final String ACTION_INCALL_SPKR = "app.com.vaipo.incall.action.spkr";
     public static final String ACTION_INCALL_MUTE = "app.com.vaipo.incall.action.mute";
 
+    public static final int REGISTER_TYPE_NONE= 1;
     public static final int REGISTER_TYPE_NUMBER = 1;
     public static final int REGISTER_TYPE_EMAILID = 2;
 
@@ -209,11 +210,11 @@ public class Utils {
         }
 
         if (key.equals("registered")) {
-            return mySharedPreferences.getBoolean(key, true);
+            return mySharedPreferences.getBoolean(key, false);
         }
 
         if (key.equals("reg_type")) {
-            return mySharedPreferences.getInt(key, Utils.REGISTER_TYPE_NUMBER);
+            return mySharedPreferences.getInt(key, Utils.REGISTER_TYPE_NONE);
         }
 
         return null;
@@ -260,10 +261,11 @@ public class Utils {
     }
 
     public static String sanitizeRegId(String id) {
-        if (! isValidEmailAddress(id))
-            return id.replaceAll("[^0-9]","").trim();
+        String trimId = id.trim();
+        if (! isValidEmailAddress(trimId))
+            return trimId.replaceAll("[^0-9]","");
         else
-            return id.trim();
+            return trimId;
     }
 
     public static boolean isValidEmailAddress(CharSequence target) {
