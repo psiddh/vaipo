@@ -15,16 +15,20 @@
     <uses-feature android:name="android.hardware.camera" />
     <uses-feature android:name="android.hardware.camera.autofocus" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
 
 
     <application
         android:name=".appState.AppState"
         android:allowBackup="true"
         android:label="@string/app_name"
+        android:debuggable="true"
+        android:configChanges="orientation"
         android:theme="@style/AppTheme" >
         <activity
             android:name=".RegisterPhoneNumberActivity"
             android:launchMode="singleTask"
+            android:icon="@drawable/ic_vaipo"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -34,22 +38,43 @@
 
         <activity
             android:name=".VaipoView"
+            android:icon="@drawable/ic_vaipo"
+            android:configChanges="orientation"
             android:label="@string/app_name" >
         </activity>
 
         <activity android:name=".ActivityDialog"
+                  android:icon="@drawable/ic_vaipo"
+                  android:configChanges="orientation"
                   android:label= "vaipo"
                   android:theme="@android:style/Theme.Holo.Dialog" >
         </activity>
 
+        <activity android:name=".InCallActivityDialog"
+                  android:icon="@drawable/ic_vaipo"
+                  android:configChanges="orientation"
+                  android:label= "InCall Settings"
+                  android:theme="@android:style/Theme.Holo.Dialog" >
+        </activity>
+
         <activity android:name=".ActivityEnterCodeDialog"
+                  android:icon="@drawable/ic_vaipo"
+                  android:configChanges="orientation"
                   android:label= "@string/app_name"
                   android:theme="@android:style/Theme.Holo.Dialog" >
         </activity>
         <activity
             android:label="@string/app_name"
+            android:icon="@drawable/ic_vaipo"
+            android:configChanges="orientation"
             android:theme="@style/Theme.AppCompat.Light"
             android:name="com.codinguser.android.contactpicker.ContactsPickerActivity">
+        </activity>
+        <activity
+            android:name=".UIActivity"
+            android:icon="@drawable/ic_vaipo"
+            android:label="@string/app_name"
+            android:configChanges="orientation|keyboardHidden|screenSize" >
         </activity>
 
         <receiver android:name=".CallStateHandler">

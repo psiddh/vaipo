@@ -22,6 +22,7 @@
                     android:id="@+id/subscriber_container"
                     >
                 </FrameLayout>
+
             </RelativeLayout>
 
             <FrameLayout
@@ -32,5 +33,9 @@
                 android:layout_marginBottom="@dimen/publisher_bottom_margin"
                 android:layout_marginEnd="@dimen/publisher_right_margin"
                 />
+
+
+
+
 
 </FrameLayout>

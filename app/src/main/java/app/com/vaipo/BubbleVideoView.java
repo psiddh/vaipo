@@ -13,6 +13,7 @@ import android.content.SharedPreferences;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.graphics.drawable.Drawable;
+import android.media.AudioManager;
 import android.os.Build;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -81,13 +82,16 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
 
     public static boolean flag = false;
 
-    private static boolean NOTIFICATION_SUPPORT = true;
+    public static boolean NOTIFICATION_SUPPORT = true;
     private int mNotifyId = 963;
 
     String mSessionId = "";
     String mToken = "";
     String mApiKey = "";
     boolean mPeerDiscover = false;
+
+    private AudioManager maudioManager;
+
 
     public static BroadcastReceiver mActionListener;
 
@@ -130,6 +134,27 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
         }
     };
 
+    public BroadcastReceiver mInCallActionReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (action.equals(Utils.ACTION_INCALL_END)) {
+                end();
+            } else if (action.equals(Utils.ACTION_INCALL_MUTE)) {
+                if (mTalk != null)
+                    mTalk.mute();
+            } else if (action.equals(Utils.ACTION_INCALL_SPKR)) {
+                int spkr = intent.getIntExtra("option", InCallActivityDialog.OPTION_NONE);
+                if (maudioManager != null)
+                    maudioManager.setSpeakerphoneOn((spkr == InCallActivityDialog.OPTION_SPKR_ON) ? true : false );
+
+            } else if (action.equals(Utils.ACTION_INCALL_SWAP)) {
+                if (mTalk != null)
+                    mTalk.swap();
+            }
+        }
+    };
+
 
     boolean mHasDoubleClicked = false;
     long lastPressTime;
@@ -142,6 +167,11 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
 
     @Override
     public int onStartCommand (Intent intent, int flags, int startId) {
+
+        if (null == intent) {
+            Log.e (TAG, " Intent is  null, flags=" + flags );
+            return flags;
+        }
 
         String sessionId = intent.getStringExtra("sessionId");
         String token = intent.getStringExtra("token");
@@ -157,6 +187,8 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
             Log.d(TAG, "Start UI with startId - return " + startId);
             return flags;
         }
+
+        Utils.sendCallStatus(this, false);
 
         mSessionId = sessionId;
         mToken = token;
@@ -231,6 +263,17 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
 
         this.registerReceiver(mActionListener, new IntentFilter(Utils.ACTION_YES));
         this.registerReceiver(mActionListener, new IntentFilter(Utils.ACTION_NO));
+
+
+        this.registerReceiver(mInCallActionReceiver, new IntentFilter(Utils.ACTION_INCALL_END));
+        this.registerReceiver(mInCallActionReceiver, new IntentFilter(Utils.ACTION_INCALL_MUTE));
+        this.registerReceiver(mInCallActionReceiver, new IntentFilter(Utils.ACTION_INCALL_SPKR));
+        this.registerReceiver(mInCallActionReceiver, new IntentFilter(Utils.ACTION_INCALL_SWAP));
+
+        maudioManager = (AudioManager) this
+                .getSystemService(Context.AUDIO_SERVICE);
+        maudioManager.setMode(AudioManager.MODE_IN_COMMUNICATION);
+
     }
 
     private void setupUI() {
@@ -361,20 +404,6 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
             e.printStackTrace();
         }
     }
-
-    public void createNotification(){
-        Intent notificationIntent = new Intent(getApplicationContext(), BubbleVideoView.class);
-        PendingIntent pendingIntent = PendingIntent.getService(getApplicationContext(), 0, notificationIntent, 0);
-
-        Notification notification = new Notification(R.drawable.ic_navigation_arrow_forward, "Click to start launcher",System.currentTimeMillis());
-        notification.setLatestEventInfo(getApplicationContext(), "Start launcher", "Click to start launcher", pendingIntent);
-        notification.flags = Notification.FLAG_AUTO_CANCEL | Notification.FLAG_ONGOING_EVENT;
-
-        NotificationManager notificationManager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
-
-        notificationManager.notify(ID_NOTIFICATION, notification);
-    }
-
 
     @Override
     public void onDestroy() {
@@ -513,10 +542,20 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
     }
 
     private void internalEnd() {
+        Utils.sendCallStatus(getApplicationContext(), true);
+        maudioManager.setSpeakerphoneOn(false);
+        maudioManager.setMode(AudioManager.MODE_NORMAL);
+
         try {
             this.unregisterReceiver(mActionListener);
         } catch (Exception e) {
             Log.d(TAG , e.getMessage() + " - ");
+        }
+
+        try {
+            this.unregisterReceiver(mInCallActionReceiver);
+        } catch (Exception e) {
+
         }
         // Unregister since the activity is about to be closed.
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
@@ -607,8 +646,8 @@ public class BubbleVideoView extends Service implements ITalkUICallbacks {
             mBuilder.addAction(new NotificationCompat.Action(R.drawable.ic_no,
                     noButtonText, noPendingIntent));
 
-        if (useDefault)
-            mBuilder.setDefaults(Notification.DEFAULT_ALL);
+        //if (useDefault)
+        //    mBuilder.setDefaults(Notification.DEFAULT_ALL);
 
         // Sets a title for the Inbox in expanded layout
         mBuilder.setStyle(new NotificationCompat.BigTextStyle(mBuilder)

@@ -74,7 +74,7 @@ public class Talk implements Session.SessionListener, Session.ConnectionListener
     private void initializePublisher(Context context) {
         mPublisher = new Publisher(context);
         mPublisher.setPublisherListener(this);
-        if (MainActivity.DEBUG_FAKE_UI)
+        if (true)
             mPublisher.setPublishAudio(false);
         mPublisher.getRenderer().setStyle(BaseVideoRenderer.STYLE_VIDEO_SCALE,
                 BaseVideoRenderer.STYLE_VIDEO_FILL);
@@ -118,7 +118,14 @@ public class Talk implements Session.SessionListener, Session.ConnectionListener
     public void swap() {
         if (mCallback != null && mSession != null)
             mCallback.swapCamera(mPublisher);
+    }
 
+    public void mute() {
+        if (mSession != null && mPublisher != null) {
+            if (mPublisher != null) {
+                mPublisher.setPublishAudio(!mPublisher.getPublishAudio());
+            }
+        }
     }
 
     public void notifyPublisher() {

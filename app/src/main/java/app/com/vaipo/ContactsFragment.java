@@ -28,9 +28,12 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
 import android.text.Editable;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -45,6 +48,7 @@ import com.firebase.client.ValueEventListener;
 import app.com.vaipo.Utils.ProgressGenerator;
 import app.com.vaipo.Utils.Utils;
 import app.com.vaipo.appState.AppState;
+import app.com.vaipo.config.OpenTokConfig;
 import app.com.vaipo.format.JsonFormatter;
 import app.com.vaipo.messages.DialMsg;
 import app.com.vaipo.messages.RegistrationMsg;
@@ -74,10 +78,17 @@ public class ContactsFragment extends Fragment implements ProgressGenerator.OnCo
     private enum State { LAUNCH_CONTACTS, DIAL, END }
     private State mState = State.LAUNCH_CONTACTS;
 
+    private boolean isContactNameSelected = false;
     public ContactsFragment() {
 
     }
 
+    @Override
+    public void onCreate(Bundle instance) {
+        super.onCreate(instance);
+        setHasOptionsMenu(true);
+
+    }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -88,7 +99,7 @@ public class ContactsFragment extends Fragment implements ProgressGenerator.OnCo
         btnContacts.setMode(ActionProcessButton.Mode.ENDLESS);
 
         contactEditText = (EditText) rootView.findViewById(R.id.contacts_btn);
-
+        isContactNameSelected = false;
         btnContacts.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -130,7 +141,8 @@ public class ContactsFragment extends Fragment implements ProgressGenerator.OnCo
                     } else {
                         enterState(State.DIAL);
                     }
-                    //mOutGoingNumber = s.toString();
+                    if (!isContactNameSelected)
+                        mOutGoingNumber = s.toString();
                 }
             }
         });
@@ -172,6 +184,21 @@ public class ContactsFragment extends Fragment implements ProgressGenerator.OnCo
     }
 
     @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+        if (id == R.id.action_settings) {
+            //Intent i = new Intent(getActivity(), InCallActivityDialog.class);
+            //startActivity(i);
+
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
     public void onComplete() {
 
     }
@@ -187,6 +214,7 @@ public class ContactsFragment extends Fragment implements ProgressGenerator.OnCo
     public void onUserSelectionResult(String phoneNumber, String contactName) {
         if (getActivity() == null)
             return;
+        isContactNameSelected = (contactName != null) && !TextUtils.isEmpty(contactName);
         String displayString = (contactName != null && !contactName.isEmpty()) ? contactName : phoneNumber;
         if (displayString == null || displayString.isEmpty()) {
             if (progressGenerator != null)
@@ -194,6 +222,7 @@ public class ContactsFragment extends Fragment implements ProgressGenerator.OnCo
             mOutGoingNumber = "";
             return;
         }
+
         mOutGoingNumber = phoneNumber;
         contactEditText.setText(displayString);
         contactEditText.setSelection(displayString.length());
@@ -205,9 +234,10 @@ public class ContactsFragment extends Fragment implements ProgressGenerator.OnCo
     private void enterState(final State state) {
         mState = state;
         btnContacts.setEnabled(true);
+        progressGenerator.complete(btnContacts);
 
         if (mState == State.LAUNCH_CONTACTS) {
-            btnContacts.setText("CONTACTS");
+            btnContacts.setText("PICK");
             mOutGoingNumber = "";
         } else if (mState == State.DIAL) {
             btnContacts.setText("DIAL");
@@ -215,6 +245,34 @@ public class ContactsFragment extends Fragment implements ProgressGenerator.OnCo
             btnContacts.setText("END");
         }
     }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if (requestCode == 1) {
+            if(resultCode == Activity.RESULT_OK){
+                int action = data.getIntExtra("action", InCallActivityDialog.ACTION_NONE);
+                int option = data.getIntExtra("option", InCallActivityDialog.OPTION_NONE);
+
+                switch (action) {
+                    case InCallActivityDialog.ACTION_END:
+                        Utils.endVaipoCall(getActivity());
+                        break;
+                    case InCallActivityDialog.ACTION_MUTE:
+                        break;
+                    case InCallActivityDialog.ACTION_SPKR:
+                        break;
+                    case InCallActivityDialog.ACTION_SWAP:
+                        break;
+                }
+
+            }
+            if (resultCode == Activity.RESULT_CANCELED) {
+                //Write your code if there's no result
+            }
+        }
+    }
+
 
     private State getState() {
         return mState;
@@ -226,8 +284,8 @@ public class ContactsFragment extends Fragment implements ProgressGenerator.OnCo
 
 
     private void setupDialMsg(String outgoingNumber, String myNumber) {
-        outgoingNumber = outgoingNumber.replaceAll("\\s+|-","");
-        myNumber = myNumber.replaceAll("\\s+|-","");
+        outgoingNumber = Utils.sanitizeRegId(outgoingNumber);
+        myNumber = Utils.sanitizeRegId(myNumber);
 
         DialMsg message = new DialMsg();
         message.setId(appState.getID());
@@ -239,7 +297,7 @@ public class ContactsFragment extends Fragment implements ProgressGenerator.OnCo
         appState.setCallee(outgoingNumber);
         appState.setCaller(myNumber);
 
-        formatter.destroy();
+        //formatter.destroy();
         formatter.initialize();
         rest.call(RestAPI.CALL, formatter.get(message), null);
     }
@@ -250,7 +308,7 @@ public class ContactsFragment extends Fragment implements ProgressGenerator.OnCo
         message.setCallee(appState.getCallee());
         message.setCaller(appState.getCaller());
         message.setState(DialMsg.END);
-        formatter.destroy();
+        //formatter.destroy();
         formatter.initialize();
         rest.call(RestAPI.CALL, formatter.get(message), null);
 
@@ -286,7 +344,6 @@ public class ContactsFragment extends Fragment implements ProgressGenerator.OnCo
 
                 if (dialMsg.getState() == DialMsg.END) {
                     Utils.endVaipoCall(ctx);
-
                 } else {
                     newSessionId = dialMsg.getSessionId();
                     newToken = dialMsg.getToken();
@@ -309,8 +366,21 @@ public class ContactsFragment extends Fragment implements ProgressGenerator.OnCo
                     i.putExtra("apikey", newApiKey);
                     i.putExtra("peerautodiscover", peerAutoDiscover);
 
-                    if (ctx != null)
-                        ctx.startService(i);
+                    //if (ctx != null)
+                    //    ctx.startService(i);
+                    if (newApiKey.equals(OpenTokConfig.API_KEY) &&
+                            newSessionId.equals(OpenTokConfig.SESSION_ID) &&
+                            newToken.equals(OpenTokConfig.TOKEN)) {
+                        return;
+                    }
+                    OpenTokConfig.API_KEY = newApiKey;
+                    OpenTokConfig.SESSION_ID = newSessionId;
+                    OpenTokConfig.TOKEN = newToken;
+
+                    if (!Utils.inCall()) {
+                        Intent intent = new Intent(ctx, UIActivity.class);
+                        startActivity(intent);
+                    }
                 }
             }
 

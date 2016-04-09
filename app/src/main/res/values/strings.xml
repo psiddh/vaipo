@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">vaipo</string>
+    <string name="app_name">Vaipo</string>
 
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
@@ -9,4 +9,42 @@
     <string name="label_send">Send</string>
     <string name="label_error_incorrect_phone">Incorrect phone</string>
     <string name="register">Register</string>
+    <string name="voinceonly">Voice Only</string>
+    <string name="audiodevice">Audio device</string>
+    <string name="helloworldemulator">Emulator Hello World</string>
+    <string name="screensharing">Screen Sharing</string>
+    <string name="defaultcameracapturer">Default Camera Capturer</string>
+    <string name="screenshot">Screenshot</string>
+
+    <string name="swapStr">Swap camera</string>
+    <string name="endCall1">End call</string>
+    <string name="endCall2">End</string>
+    <string name="audioOnly">Audio only</string>
+    <string name="send">Send</string>
+    <string name="archivingOn">Archiving on</string>
+    <string name="archivingOff">Archiving off</string>
+    <string name="notification">Ongoing call</string>
+    <string name="clearNotificationService">Clear Notification</string>
+
+    <string name="title_first_section">Registration Status</string>
+    <string name="title_checkbox_preference">title_checkbox_preference</string>
+    <string name="default_checkbox_preference">default_checkbox_preference</string>
+    <string name="title_edittext_preference">title_edittext_preference</string>
+    <string name="title_second_section">Preferences</string>
+    <string name="title_list_preference">Video Layout</string>
+    <string name="dialog_title_list_preference">dialog_title_list_preference</string>
+    <string name="title_intent_preference">title_intent_preference</string>
+    <string name="dialog_title_edittext_preference">Video View Preferences</string>
+    <string name="summary_edittext_preference">summary_edittext_preference</string>
+
+    <string-array name="entries_list_preference">
+        <item>Overlay</item>
+        <item>Full Screen</item>
+    </string-array>
+
+    <integer-array name="entryvalues_list_preference">
+        <item>0</item>
+        <item>1</item>
+    </integer-array>
+
 </resources>

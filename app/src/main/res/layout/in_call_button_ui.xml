@@ -1,0 +1,86 @@
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:custom="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="bottom"
+    android:theme="@android:style/Theme.Translucent.NoTitleBar"
+    android:shrinkColumns="*"  android:stretchColumns="*" android:background="#ffffff">
+
+
+    <!-- Row 1 with single column -->
+    <TableRow
+        android:layout_height="wrap_content"
+        android:layout_width="fill_parent"
+        android:gravity="center_horizontal">
+
+
+        <com.dd.processbutton.iml.ActionProcessButton
+            android:id="@+id/end"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@+id/contacts_btn"
+            android:text="END"
+            android:drawableTop="@android:drawable/ic_menu_call"
+            android:gravity="center"
+            android:padding="20dip"
+            android:textColor="@android:color/white"
+            custom:pb_colorNormal="#F08080"
+            android:textSize="18sp" />
+
+
+    </TableRow>
+
+    <TableLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:shrinkColumns="*"  android:stretchColumns="*" android:background="#80000000">
+
+
+        <!-- Row 2 with 3 columns -->
+
+
+        <TableRow
+            android:id="@+id/tableRow1"
+            android:layout_height="wrap_content"
+            android:layout_width="match_parent">
+
+            <com.dd.processbutton.iml.ActionProcessButton
+                android:id="@+id/mute"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_toEndOf="@+id/contacts_btn"
+                android:drawableTop="@drawable/mute_pub"
+                android:gravity="center"
+                android:text="Mute"
+                android:padding="20dip"
+                android:textColor="@android:color/white"
+                android:textSize="18sp" />
+
+            <com.dd.processbutton.iml.ActionProcessButton
+                android:id="@+id/swap"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawableTop="@drawable/camera"
+                android:text="Swap"
+                android:padding="20dip"
+                android:gravity="center"
+                android:textColor="@android:color/white"
+                android:textSize="18sp" />
+
+            <com.dd.processbutton.iml.ActionProcessButton
+                android:id="@+id/speaker"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:drawableTop="@android:drawable/stat_sys_speakerphone"
+                android:text="Spkr"
+                android:padding="20dip"
+                android:gravity="center"
+                android:textColor="@android:color/white"
+                android:textSize="18sp" />
+
+        </TableRow>
+    </TableLayout>
+
+</FrameLayout>

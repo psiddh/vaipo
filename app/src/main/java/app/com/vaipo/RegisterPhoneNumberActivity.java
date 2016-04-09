@@ -18,11 +18,14 @@ package app.com.vaipo;
 
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.telephony.TelephonyManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -43,22 +46,31 @@ public class RegisterPhoneNumberActivity extends Activity implements ContactsLis
 
     private ContactsFragment mContactsFragment = new ContactsFragment();
     private VerifyPhoneFragment mVerifyPhoneFragment = new VerifyPhoneFragment();
+    private SettingsFragment mSettingsFragment = new SettingsFragment();
+    private LinkIDsFragment mLinkIDsFragment = new LinkIDsFragment();
+
+    private boolean isSIMReady = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Firebase.setAndroidContext(this);
         setContentView(R.layout.activity_flags);
-        if (savedInstanceState == null) {
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-            mIsRegisteredAlready = prefs.getBoolean("registered", false);
 
-            mIsRegisteredAlready = false;
+        //SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        //mIsRegisteredAlready = prefs.getBoolean("registered", false);
+
+        isSIMReady = Utils.isSimReady(this);
+
+        mIsRegisteredAlready = (Boolean)Utils.getPref(this, "registered");
+        int type = (Integer)Utils.getPref(this, "reg_type");
+
+        if (savedInstanceState == null) {
             if (!mIsRegisteredAlready) {
                 //mVerifyPhoneFragment = new VerifyPhoneFragment();
-                getFragmentManager().beginTransaction()
-                        .add(R.id.container, mVerifyPhoneFragment)
-                        .commit();
+                        getFragmentManager().beginTransaction()
+                                .add(R.id.container, (type == Utils.REGISTER_TYPE_NUMBER) ? mVerifyPhoneFragment : mLinkIDsFragment)
+                                .commit();
             } else {
                 //mContactsFragment = new ContactsFragment();
                 getFragmentManager().beginTransaction()
@@ -84,7 +96,13 @@ public class RegisterPhoneNumberActivity extends Activity implements ContactsLis
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         if (id == R.id.action_settings) {
-            return true;
+            FragmentManager fragmentManager = getFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.replace(R.id.container , mSettingsFragment);
+            fragmentTransaction.addToBackStack(null);
+            fragmentTransaction.commit();
+
+            return  true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -131,6 +149,14 @@ public class RegisterPhoneNumberActivity extends Activity implements ContactsLis
                     //Do what you wish to do with phoneNumber e.g.
                     //Toast.makeText(this, "Phone number found: " + phoneNumber , Toast.LENGTH_SHORT).show();
                 }
+
+            case 1:
+                mContactsFragment.onActivityResult(requestCode, resultCode, data);
+                break;
+            case LinkIDsFragment.REQUEST_CODE_EMAIL:
+                mLinkIDsFragment.onActivityResult(requestCode, resultCode, data);
+                break;
+
             default:
                 break;
         }
@@ -140,11 +166,15 @@ public class RegisterPhoneNumberActivity extends Activity implements ContactsLis
     public void onPostResume() {
         super.onPostResume();
         if (mIsRegisteredAlready) {
-            if(getFragmentManager().findFragmentByTag(mVerifyPhoneFragment.getTag()) != null) {
-                if (mVerifyPhoneFragment.isAdded()) {
+
+            Integer type = (Integer) Utils.getPref(this, "reg_type");
+            Fragment frag = (type == Utils.REGISTER_TYPE_NUMBER) ? mVerifyPhoneFragment :  mLinkIDsFragment;
+
+            if(getFragmentManager().findFragmentByTag(frag.getTag()) != null) {
+                if (frag.isAdded()) {
                     getFragmentManager()
                             .beginTransaction().
-                            remove(mVerifyPhoneFragment).commit();
+                            remove(frag).commit();
                 }
             }
             if (!mContactsFragment.isAdded()) {
@@ -160,14 +190,12 @@ public class RegisterPhoneNumberActivity extends Activity implements ContactsLis
     @Override
     public void onRegistrationDone() {
         mIsRegisteredAlready = true;
-        //mContactsFragment = new ContactsFragment();
-        /*getFragmentManager().beginTransaction()
-                .add(R.id.container, mContactsFragment)
-                .commit();*/
+        Utils.putPref(this, "checkbox_preference", mIsRegisteredAlready);
     }
 
     @Override
     public void onRegistrationFailed() {
         mIsRegisteredAlready = false;
+        Utils.putPref(this, "checkbox_preference", mIsRegisteredAlready);
     }
 }

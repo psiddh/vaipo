@@ -43,7 +43,6 @@ import app.com.vaipo.openTok.Talk;
 import app.com.vaipo.rest.RestAPI;
 
 import com.dd.processbutton.iml.ActionProcessButton;
-import com.firebase.client.Firebase;
 
 public class VerifyPhoneFragment extends BaseFlagFragment implements ProgressGenerator.OnCompleteListener {
 
@@ -111,6 +110,15 @@ public class VerifyPhoneFragment extends BaseFlagFragment implements ProgressGen
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        // This makes sure that the container activity has implemented
+        // the callback interface. If not, it throws an exception
+        try {
+            mCallback = (RegistrationVerificationListener) getActivity();
+        } catch (ClassCastException e) {
+            throw new ClassCastException(getActivity().toString()
+                    + " must implement LogoutUser");
+        }
+
         appState = (AppState) getActivity().getApplication();
         sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
 
@@ -120,21 +128,6 @@ public class VerifyPhoneFragment extends BaseFlagFragment implements ProgressGen
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver,
                 new IntentFilter(Utils.REGISTRATION_STATUS));
     }
-
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-
-        // This makes sure that the container activity has implemented
-        // the callback interface. If not, it throws an exception
-        try {
-            mCallback = (RegistrationVerificationListener) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(activity.toString()
-                    + " must implement LogoutUser");
-        }
-    }
-
 
     @Override
     public void onDestroyView() {
@@ -227,7 +220,8 @@ public class VerifyPhoneFragment extends BaseFlagFragment implements ProgressGen
 
     private void sendRegisterMessage() {
         String original = validate();
-        number = original.replaceAll("\\s+|-","");
+        number =  Utils.sanitizeRegId(original);
+
         RegistrationMsg msg = new RegistrationMsg(appState.getID(), number);
         rest.call(RestAPI.REGISTER, formatter.get(msg), new RestAPI.onPostCallBackDone() {
             @Override

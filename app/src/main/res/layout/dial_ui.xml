@@ -5,6 +5,7 @@
                 android:layout_height="match_parent" tools:context=".ChatActivity"
                 android:gravity="center|center_horizontal"
                 android:tag="contacts_dial"
+                android:background="@drawable/avatar"
                 android:id ="@+id/rootView">
 
 
@@ -14,7 +15,8 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         android:layout_toEndOf="@+id/contacts_btn"
-        android:text="Contacts"
+        android:text="Pick"
+        android:drawableTop="@drawable/ic_social_people"
         android:layout_marginTop="20dp"
         android:gravity="center"
         android:textColor="@android:color/white"
@@ -28,9 +30,10 @@
     <AutoCompleteTextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:inputType="textAutoComplete|phone"
+        android:inputType="text"
         android:ems="10"
-        android:hint="Video Call Someone ?"
+        android:gravity="center"
+        android:hint="Pick to Call Or Type..."
         android:id="@+id/contacts_btn"
         android:layout_alignTop="@+id/dialTo"
         android:layout_alignParentStart="true"/>

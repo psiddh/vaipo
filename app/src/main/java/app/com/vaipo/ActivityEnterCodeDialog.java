@@ -51,6 +51,7 @@ public class ActivityEnterCodeDialog extends Activity {
                     public void onResult(Integer result) {
                         Log.d(TAG, "Hurrah " + result);
                         Utils.sendRegistartionStatus(getApplicationContext(), (result == Utils.REST_RESPONSE_OK));
+                        Utils.putPref(getApplicationContext(),"reg_type", Utils.REGISTER_TYPE_NUMBER);
                         finish();
                     }
                 });

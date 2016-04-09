@@ -9,6 +9,7 @@
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:gravity="center_vertical"
     android:tag="verfiy"
+    android:background="@color/material_deep_teal_500"
     tools:context=".FlagsActivity$PlaceholderFragment">
 
     <EditText
@@ -16,7 +17,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/status_edittext"
         android:layout_above="@+id/l1"
-        android:layout_marginBottom="47dp"
+        android:layout_marginBottom="16dp"
         android:fontFamily="sans-serif"
         android:textSize="24sp"
         android:text="Hey! Please confirm your country code and enter your phone number."
@@ -35,13 +36,13 @@
         <Spinner
             android:id="@+id/spinner"
             android:layout_width="wrap_content"
-            android:layout_height="41dp"
+            android:layout_height="wrap_content"
             android:background="@drawable/edit_box_drop_selector"
             android:dropDownWidth="wrap_content"/>
 
         <EditText
             android:id="@+id/phone"
-            android:layout_height="41dp"
+            android:layout_height="wrap_content"
             android:layout_width="0dp"
             android:layout_marginLeft="0dp"
             android:layout_marginRight="0dp"
@@ -54,7 +55,7 @@
         android:layout_below="@id/l1"
         android:id="@+id/btn_register"
         android:layout_width="match_parent"
-        android:layout_height="48dp"
+        android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         android:text="@string/register"
         android:layout_marginTop="20dp"

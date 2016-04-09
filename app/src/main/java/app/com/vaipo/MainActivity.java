@@ -27,6 +27,7 @@ import java.util.Locale;
 
 import app.com.vaipo.appState.AppState;
 import app.com.vaipo.Utils.Utils;
+import app.com.vaipo.config.OpenTokConfig;
 import app.com.vaipo.fire.FirebaseListener;
 import app.com.vaipo.format.JsonFormatter;
 import app.com.vaipo.messages.DialMsg;
@@ -425,7 +426,17 @@ public class MainActivity extends Activity {
                     i.putExtra("apikey", newApiKey);
                     i.putExtra("peerautodiscover", peerAutoDiscover);
 
-                    MainActivity.this.startService(i);
+                    if (false)
+                        MainActivity.this.startService(i);
+                    else {
+                        OpenTokConfig.API_KEY = newApiKey;
+                        OpenTokConfig.SESSION_ID = newSessionId;
+                        OpenTokConfig.TOKEN = newToken;
+
+                        Intent intent = new Intent(MainActivity.this, UIActivity.class);
+                        startActivity(intent);
+                    }
+
                 }
             }
 
