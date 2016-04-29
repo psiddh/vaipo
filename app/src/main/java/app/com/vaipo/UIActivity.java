@@ -547,7 +547,7 @@ public class UIActivity extends Activity implements Session.SessionListener,
     @Override
     public void onEndCall() {
         cancelNotification();
-        Utils.endVaipoCall(this);
+        //Utils.endVaipoCall(this);
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mExtEventslistener);
         {

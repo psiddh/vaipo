@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<map>
+    <string name="number">16503907214</string>
+    <string name="ue">1</string>
+    <int name="reg_type" value="1" />
+    <boolean name="checkbox_preference" value="true" />
+    <boolean name="enable_incall" value="true" />
+    <string name="ui_preference">1</string>
+    <boolean name="registered" value="true" />
+</map>

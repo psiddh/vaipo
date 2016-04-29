@@ -29,7 +29,7 @@
         android:title="@string/title_second_section">
 
         <ListPreference
-            android:key="ue"
+            android:key="ui_preference"
             android:title="@string/title_list_preference"
             android:summary="This option is used while showing the video call"
             android:dialogTitle="@string/dialog_title_list_preference"
