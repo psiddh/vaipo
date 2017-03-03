@@ -1,4 +1,7 @@
 # vaipo
+
+Latest Android client source : https://bitbucket.org/psiddh/vaipo/
+
 Vaipo - Facetime for Android , much more and beyond
 
 WebRTC based Android application that uses WhatsApp model to allow a video chat with any of your contacts.
@@ -12,5 +15,3 @@ Technologies Used:
 - OpenTok client SDK and server SDK (Twilio webrtc SDK integration in-progress)
 - Tropo SMS APIs
 - Heroku as Cloud application platform
-
-Latest Android client source : https://bitbucket.org/psiddh/vaipo/
