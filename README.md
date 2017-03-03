@@ -12,3 +12,5 @@ Technologies Used:
 - OpenTok client SDK and server SDK (Twilio webrtc SDK integration in-progress)
 - Tropo SMS APIs
 - Heroku as Cloud application platform
+
+Latest Android client source : https://bitbucket.org/psiddh/vaipo/
